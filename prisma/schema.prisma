@@ -1,0 +1,355 @@
+// MadnessLab Prisma Schema
+// NCAA Tournament Intelligence App
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Teams & Stats
+// ─────────────────────────────────────────────────────────────
+
+model Team {
+  id           String   @id @default(cuid())
+  name         String
+  slug         String   @unique
+  abbreviation String
+  conference   String
+  programTier  String   // "blueblood" | "power" | "mid-major" | "low-major"
+  logoUrl      String?
+  primaryColor String   @default("#1a1a2e")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  seasonStats        TeamSeasonStats?
+  recentForm         TeamRecentForm?
+  tournamentEntries  TournamentTeam[]
+  gamesAsTeam1       Game[]            @relation("Team1Games")
+  gamesAsTeam2       Game[]            @relation("Team2Games")
+  gamesWon           Game[]            @relation("WonGames")
+  simResults         SimulationTeamResult[]
+  histProfile        HistoricalTeamProfile[]
+  userBrackets       UserBracket[]
+
+  @@index([slug])
+  @@index([conference])
+}
+
+model TeamSeasonStats {
+  id            String  @id @default(cuid())
+  teamId        String  @unique
+  team          Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  // KenPom-style metrics
+  adjOE         Float   // Adjusted Offensive Efficiency (points per 100 possessions)
+  adjDE         Float   // Adjusted Defensive Efficiency (lower = better)
+  adjEM         Float   // Adjusted Efficiency Margin (adjOE - adjDE)
+  netRating     Float   // Simple net rating
+  tempo         Float   // Adjusted tempo (possessions per 40 min)
+
+  // Shooting
+  threePointRate     Float  // % of FGA that are 3-pointers
+  threePointPct      Float  // 3-point field goal percentage
+  efgPct             Float  // Effective FG%
+  ftRate             Float  // Free throw rate (FTA/FGA)
+  ftPct              Float  // Free throw percentage
+
+  // Ball handling
+  turnoverRate       Float  // Turnover % (TO per 100 possessions)
+  turnoverForcedRate Float  // Opponent TO rate
+
+  // Rebounding
+  offReboundRate     Float  // Offensive rebound rate
+  defReboundRate     Float  // Defensive rebound rate
+
+  // Strength & schedule
+  sosRank            Int    // Strength of schedule rank (1 = hardest)
+  luckFactor         Float  // KenPom luck factor (-1 to 1)
+  kenpomRank         Int    // Overall KenPom rank
+
+  // Composite scores (computed)
+  titleProfileScore  Float  @default(0)  // How well team matches historical champion profiles (0-100)
+  upsetVulnerability Float  @default(0)  // Upset vulnerability score (0-100)
+
+  updatedAt DateTime @updatedAt
+}
+
+model TeamRecentForm {
+  id           String @id @default(cuid())
+  teamId       String @unique
+  team         Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  last5wins    Int    // Wins in last 5 games
+  last10wins   Int    // Wins in last 10 games
+  streakType   String // "W" or "L"
+  streakLength Int    // Length of current streak
+  avgMarginLast5 Float // Average margin of victory/defeat in last 5
+
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────
+// Tournament Structure
+// ─────────────────────────────────────────────────────────────
+
+model Tournament {
+  id        String   @id @default(cuid())
+  year      Int      @unique
+  name      String
+  status    String   @default("upcoming") // "upcoming" | "in_progress" | "completed"
+  startDate DateTime
+  endDate   DateTime
+  venue     String   @default("Various")
+  createdAt DateTime @default(now())
+
+  teams       TournamentTeam[]
+  games       Game[]
+  simRuns     SimulationRun[]
+  userBrackets UserBracket[]
+
+  @@index([year])
+}
+
+model TournamentTeam {
+  id            String  @id @default(cuid())
+  tournamentId  String
+  tournament    Tournament @relation(fields: [tournamentId], references: [id])
+  teamId        String
+  team          Team    @relation(fields: [teamId], references: [id])
+
+  seed          Int
+  region        String  // "South" | "East" | "West" | "Midwest"
+  isFirstFour   Boolean @default(false)
+  firstFourOpponent String? // If First Four team, slug of opponent
+
+  @@unique([tournamentId, teamId])
+  @@index([tournamentId, region])
+  @@index([tournamentId, seed])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Games & Predictions
+// ─────────────────────────────────────────────────────────────
+
+model Game {
+  id            String   @id @default(cuid())
+  tournamentId  String
+  tournament    Tournament @relation(fields: [tournamentId], references: [id])
+
+  round         Int      // 0=First Four, 1=R64, 2=R32, 3=Sweet16, 4=Elite8, 5=Final4, 6=Championship
+  roundName     String   // "First Four" | "Round of 64" | etc.
+  region        String   // "South" | "East" | "West" | "Midwest" | "Final Four"
+  bracketPosition Int    // Position in bracket (1-indexed within round)
+
+  team1Id       String?
+  team1         Team?    @relation("Team1Games", fields: [team1Id], references: [id])
+  team2Id       String?
+  team2         Team?    @relation("Team2Games", fields: [team2Id], references: [id])
+
+  team1Seed     Int?
+  team2Seed     Int?
+  team1WinProb  Float?   // 0.0 to 1.0
+  team2WinProb  Float?
+
+  winnerId      String?
+  winner        Team?    @relation("WonGames", fields: [winnerId], references: [id])
+
+  venue         String?
+  gameDate      DateTime?
+  isCompleted   Boolean  @default(false)
+
+  // Analytics
+  volatilityScore    Float?  // 0-100
+  upsetAlertTier     String? // "none" | "low" | "medium" | "high"
+  upsetAlertReasons  String? // JSON array of strings
+
+  prediction    GamePrediction?
+  simResults    SimulationGameResult[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tournamentId, round])
+  @@index([tournamentId, region])
+}
+
+model GamePrediction {
+  id             String @id @default(cuid())
+  gameId         String @unique
+  game           Game   @relation(fields: [gameId], references: [id])
+
+  team1WinProb   Float
+  team2WinProb   Float
+  decidingFactors String // JSON array of strings
+  confidenceTier  String // "coin_flip" | "slight_edge" | "favored" | "clear_favorite"
+  aiExplanation   String? // LLM-generated explanation
+  fallbackExplanation String // Deterministic fallback
+  modelVersion    String @default("v1")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────
+// Simulation
+// ─────────────────────────────────────────────────────────────
+
+model SimulationRun {
+  id              String   @id @default(cuid())
+  tournamentId    String
+  tournament      Tournament @relation(fields: [tournamentId], references: [id])
+
+  numSimulations  Int
+  status          String   @default("pending") // "pending" | "running" | "completed" | "failed"
+  seed            Int?     // Random seed for reproducibility
+
+  gameResults     SimulationGameResult[]
+  teamResults     SimulationTeamResult[]
+
+  createdAt DateTime @default(now())
+  completedAt DateTime?
+
+  @@index([tournamentId])
+}
+
+model SimulationGameResult {
+  id             String @id @default(cuid())
+  simRunId       String
+  simRun         SimulationRun @relation(fields: [simRunId], references: [id])
+  gameId         String
+  game           Game   @relation(fields: [gameId], references: [id])
+
+  winnerTeamId   String
+  winProbUsed    Float
+  wasUpset       Boolean @default(false)
+  simIteration   Int     // Which simulation run (1..N)
+
+  @@index([simRunId])
+  @@index([gameId])
+}
+
+model SimulationTeamResult {
+  id              String @id @default(cuid())
+  simRunId        String
+  simRun          SimulationRun @relation(fields: [simRunId], references: [id])
+  teamId          String
+  team            Team   @relation(fields: [teamId], references: [id])
+
+  titleOdds       Float   // Fraction of sims where team won championship
+  finalFourOdds   Float
+  eliteEightOdds  Float
+  sweet16Odds     Float
+  r32Odds         Float   // Round of 32 odds
+  avgAdvancement  Float   // Average rounds advanced
+
+  @@unique([simRunId, teamId])
+  @@index([simRunId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Historical Data
+// ─────────────────────────────────────────────────────────────
+
+model HistoricalTournamentGame {
+  id          String @id @default(cuid())
+  year        Int
+  round       String
+  region      String
+  team1Name   String
+  team1Seed   Int
+  team2Name   String
+  team2Seed   Int
+  winnerName  String
+  winnerSeed  Int
+  wasUpset    Boolean // Lower seed won
+  margin      Int?    // Final score margin
+
+  @@index([year])
+  @@index([team1Seed, team2Seed])
+}
+
+model HistoricalTeamProfile {
+  id              String @id @default(cuid())
+  year            Int
+  teamName        String
+  seed            Int
+  region          String
+  conference      String
+  programTier     String
+
+  // KenPom-style stats (normalized to era)
+  adjOE           Float
+  adjDE           Float
+  adjEM           Float
+  tempo           Float
+  sosRank         Int
+  threePointRate  Float
+  turnoverRate    Float
+  offReboundRate  Float
+  defReboundRate  Float
+
+  // Tournament result
+  tournamentResult String // "R64" | "R32" | "S16" | "E8" | "F4" | "Runner-up" | "Champion"
+  roundsWon       Int
+
+  // Profile vector (for similarity search) - stored as JSON
+  profileVector   String // JSON array of normalized floats
+
+  // Optional link to current team (for "modern equivalent" feature)
+  currentTeamId   String?
+  currentTeam     Team?  @relation(fields: [currentTeamId], references: [id])
+
+  @@index([year])
+  @@index([seed])
+  @@index([tournamentResult])
+}
+
+// ─────────────────────────────────────────────────────────────
+// User Features
+// ─────────────────────────────────────────────────────────────
+
+model UserBracket {
+  id            String   @id @default(cuid())
+  sessionId     String   // Anonymous session (no auth required)
+  tournamentId  String
+  tournament    Tournament @relation(fields: [tournamentId], references: [id])
+
+  picks         String   // JSON: { [gameId]: teamId }
+  lockedPicks   String   @default("{}") // JSON: games user has locked
+  score         Int      @default(0)
+  poolRuleSetId String?
+  poolRuleSet   PoolRuleSet? @relation(fields: [poolRuleSetId], references: [id])
+
+  // Pool optimizer settings
+  optimizerMode String?  // "conservative" | "balanced" | "contrarian"
+
+  // Favorites (teams user is rooting for)
+  favoriteTeamId String?
+  favoriteTeam   Team?  @relation(fields: [favoriteTeamId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sessionId])
+  @@index([tournamentId])
+}
+
+model PoolRuleSet {
+  id                String @id @default(cuid())
+  name              String
+  roundMultipliers  String // JSON: { "1": 1, "2": 2, "3": 4, "4": 8, "5": 16, "6": 32 }
+  upsetBonus        Int    @default(0)  // Bonus points for picking an upset correctly
+  seedBonus         Int    @default(0)  // Bonus = seed of winning team
+  description       String?
+
+  userBrackets UserBracket[]
+
+  @@index([name])
+}

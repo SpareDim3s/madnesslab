@@ -103,10 +103,11 @@ export default function AboutPage() {
           <h2 className="text-lg font-bold text-white">Bracket Twins</h2>
         </div>
         <p className="text-sm text-gray-300 leading-relaxed">
-          For each team in the 2026 field, we compute a weighted Euclidean distance across normalized features
-          from all other 2026 tournament teams: adjEM (35%), seed (25%), adjDE (18%), adjOE (12%), eFG% (6%),
-          and 3-point rate (4%). The 3 most statistically similar teams in this year's field are shown —
-          useful for spotting comparable styles and predicting how teams might perform against shared opponents.
+          For each 2026 team, we compute a weighted Euclidean distance across normalized features against a
+          curated library of past tournament teams (2012–2025): adjEM (35%), seed (25%), adjDE (18%), adjOE (12%),
+          eFG% (6%), and 3-point rate (4%). The 3 most statistically similar <em>historical</em> teams are shown
+          along with how far they went — Champion, Final Four, Elite Eight, etc. — giving you a data-grounded
+          precedent for what a team like this tends to accomplish in March.
         </p>
       </section>
 

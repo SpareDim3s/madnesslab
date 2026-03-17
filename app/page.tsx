@@ -1,4 +1,3 @@
-import { HeroSection } from '@/components/HeroSection'
 import { MetricCard } from '@/components/MetricCard'
 import { TeamProfileCard } from '@/components/TeamProfileCard'
 import { UpsetAlertBadge } from '@/components/UpsetAlertBadge'
@@ -35,8 +34,16 @@ export default function HomePage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
-      {/* Hero */}
-      <HeroSection />
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+          Every bracket is wrong.{' '}
+          <span className="text-orange-400">Ours tells you why.</span>
+        </h1>
+        <p className="mt-2 text-gray-400 text-base">
+          Real T-Rank efficiency data · Monte Carlo simulations · 2026 NCAA Tournament
+        </p>
+      </div>
 
       {/* Headline metrics */}
       <section className="mb-12">

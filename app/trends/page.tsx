@@ -1,11 +1,11 @@
 import {
   TrendChartCard, SeedUpsetRatesChart, ChampionAdjEMChart, ConferenceChampionshipChart
 } from '@/components/TrendChartCard'
-import { HistoricalTwinCard } from '@/components/HistoricalTwinCard'
+import { HistoricalMatchCard } from '@/components/HistoricalMatchCard'
 import { MetricCard } from '@/components/MetricCard'
-import { HISTORICAL_CHAMPIONS, ARCHETYPE_PERFORMANCES, CONFERENCE_TOURNAMENT_STATS } from '@/lib/historicalData'
+import { HISTORICAL_CHAMPIONS, ARCHETYPE_PERFORMANCES, CONFERENCE_TOURNAMENT_STATS, HISTORICAL_TWIN_CANDIDATES } from '@/lib/historicalData'
 import { ALL_TEAMS } from '@/lib/mockData'
-import { findBracketTwins } from '@/lib/historicalTwins'
+import { findHistoricalBracketTwins } from '@/lib/historicalTwins'
 import { cn } from '@/lib/utils'
 import { TrendingUp, Trophy, Users, BarChart2, GitMerge } from 'lucide-react'
 
@@ -22,7 +22,7 @@ export default function TrendsPage() {
     .slice(0, 3)
   const twinSpotlights = topTeams.map(team => ({
     team,
-    twins: findBracketTwins(team, ALL_TEAMS, 2),
+    twins: findHistoricalBracketTwins(team, HISTORICAL_TWIN_CANDIDATES, 2),
   }))
 
   const recentChampion = HISTORICAL_CHAMPIONS[0]
@@ -203,17 +203,17 @@ export default function TrendsPage() {
           <h2 className="text-xl font-bold text-white">2026 Bracket Twins — Top Contenders</h2>
         </div>
         <p className="text-sm text-gray-400 mb-6">
-          For each top 2026 contender, the most statistically similar teams in this year&apos;s field — their potential mirror matchups.
+          For each top 2026 contender, the most statistically similar past tournament teams — and how far they went.
         </p>
 
         {twinSpotlights.map(({ team, twins }) => (
           <div key={team.id} className="mb-8">
             <h3 className="font-semibold text-white mb-3">
-              <span className="text-orange-400">#{team.seed}</span> {team.name} — Bracket Twins
+              <span className="text-orange-400">#{team.seed}</span> {team.name} — Historical Twins
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {twins.map((twin, i) => (
-                <HistoricalTwinCard key={twin.team.id} twin={twin} rank={i + 1} />
+              {twins.map((match, i) => (
+                <HistoricalMatchCard key={match.candidate.id} match={match} rank={i + 1} />
               ))}
             </div>
           </div>

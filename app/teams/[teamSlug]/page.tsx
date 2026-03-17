@@ -3,11 +3,11 @@ export const dynamic = 'force-dynamic'
 import { notFound } from 'next/navigation'
 import { TEAMS_BY_SLUG, TEAMS_BY_ID, ALL_TEAMS } from '@/lib/mockData'
 import { predictMatchup } from '@/lib/predictionEngine'
-import { findBracketTwins } from '@/lib/historicalTwins'
-import { getUpsetRateForMatchup } from '@/lib/historicalData'
+import { findHistoricalBracketTwins } from '@/lib/historicalTwins'
+import { getUpsetRateForMatchup, HISTORICAL_TWIN_CANDIDATES } from '@/lib/historicalData'
 import { generateFallbackExplanation } from '@/lib/aiExplainer'
 import { TeamStatGrid } from '@/components/TeamStatGrid'
-import { HistoricalTwinCard } from '@/components/HistoricalTwinCard'
+import { HistoricalMatchCard } from '@/components/HistoricalMatchCard'
 import { UpsetAlertBadge } from '@/components/UpsetAlertBadge'
 import { AIExplanationCard } from '@/components/AIExplanationCard'
 import { MatchupCard } from '@/components/MatchupCard'
@@ -53,7 +53,7 @@ export default function TeamPage({ params }: PageProps) {
   }) : ''
 
   // Bracket twins — most similar teams in the 2026 field
-  const twins = findBracketTwins(team, ALL_TEAMS, 3)
+  const twins = findHistoricalBracketTwins(team, HISTORICAL_TWIN_CANDIDATES, 3)
 
   // Path difficulty
   const regionTeams = ALL_TEAMS.filter(t => t.region === team.region && !t.isFirstFour && t.id !== team.id)
@@ -143,6 +143,40 @@ export default function TeamPage({ params }: PageProps) {
           </div>
         </div>
       </div>
+
+      {/* Key Players */}
+      {team.keyPlayers && team.keyPlayers.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-lg font-bold text-white mb-3">Key Players</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {team.keyPlayers.map(player => (
+              <div key={player.name} className="rounded-xl border border-gray-800 bg-gray-900/60 p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <p className="font-semibold text-white text-sm">{player.name}</p>
+                    <p className="text-xs text-gray-500">{player.year} · {player.position}</p>
+                  </div>
+                  <span className="inline-flex items-center rounded-full bg-gray-800 px-2 py-0.5 text-xs font-bold text-orange-400">
+                    {player.position}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 mt-3">
+                  {[
+                    { label: 'PPG', value: player.ppg.toFixed(1) },
+                    { label: 'RPG', value: player.rpg.toFixed(1) },
+                    { label: 'APG', value: player.apg.toFixed(1) },
+                  ].map(stat => (
+                    <div key={stat.label} className="rounded bg-gray-800/60 p-1.5 text-center">
+                      <p className="text-[10px] text-gray-500 uppercase tracking-wide">{stat.label}</p>
+                      <p className="text-sm font-semibold text-gray-200">{stat.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Full stat grid */}
       <section className="mb-8">
@@ -257,12 +291,12 @@ export default function TeamPage({ params }: PageProps) {
       <section className="mb-8">
         <div className="flex items-center gap-2 mb-3">
           <GitMerge className="h-5 w-5 text-orange-400" />
-          <h2 className="text-lg font-bold text-white">2026 Bracket Twins</h2>
-          <span className="text-xs text-gray-500">Most statistically similar teams in this year&apos;s field</span>
+          <h2 className="text-lg font-bold text-white">Historical Twins</h2>
+          <span className="text-xs text-gray-500">Most statistically similar past tournament teams</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {twins.map((twin, i) => (
-            <HistoricalTwinCard key={twin.team.id} twin={twin} rank={i + 1} />
+          {twins.map((match, i) => (
+            <HistoricalMatchCard key={match.candidate.id} match={match} rank={i + 1} />
           ))}
         </div>
       </section>

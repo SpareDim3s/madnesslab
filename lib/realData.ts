@@ -57,6 +57,11 @@ const SOUTH_TEAMS: (MockTeam & { _dataSource?: string })[] = [
     titleProfileScore: 72,
     upsetVulnerability: 5,
     espnId: 57,
+    keyPlayers: [
+      { name: 'Walter Clayton Jr', position: 'G', ppg: 19.2, rpg: 3.8, apg: 4.1, year: 'Sr' },
+      { name: 'Alex Condon', position: 'F', ppg: 13.6, rpg: 8.4, apg: 1.8, year: 'So' },
+      { name: 'Will Richard', position: 'G', ppg: 14.8, rpg: 4.2, apg: 2.3, year: 'Jr' },
+    ],
     _dataSource: 'barttorvik-live',
   },
   {
@@ -358,6 +363,11 @@ const SOUTH_TEAMS: (MockTeam & { _dataSource?: string })[] = [
     titleProfileScore: 53,
     upsetVulnerability: 16,
     espnId: 158,
+    keyPlayers: [
+      { name: 'Brice Williams', position: 'G', ppg: 19.8, rpg: 4.8, apg: 2.6, year: 'Sr' },
+      { name: 'Rollie Worster', position: 'G', ppg: 11.4, rpg: 3.2, apg: 5.4, year: 'Sr' },
+      { name: 'Juwan Gary', position: 'F', ppg: 12.6, rpg: 6.8, apg: 1.8, year: 'Sr' },
+    ],
     _dataSource: 'barttorvik-live',
   },
   {
@@ -530,6 +540,11 @@ const SOUTH_TEAMS: (MockTeam & { _dataSource?: string })[] = [
     titleProfileScore: 67,
     upsetVulnerability: 9,
     espnId: 356,
+    keyPlayers: [
+      { name: 'Marcus Domask', position: 'G', ppg: 17.4, rpg: 5.2, apg: 3.8, year: 'Gr' },
+      { name: 'Coleman Hawkins', position: 'F', ppg: 12.8, rpg: 7.6, apg: 2.6, year: 'Sr' },
+      { name: 'Tomislav Ivisic', position: 'C', ppg: 11.2, rpg: 7.4, apg: 1.4, year: 'Jr' },
+    ],
     _dataSource: 'barttorvik-live',
   },
   {
@@ -702,6 +717,11 @@ const SOUTH_TEAMS: (MockTeam & { _dataSource?: string })[] = [
     titleProfileScore: 68,
     upsetVulnerability: 5,
     espnId: 248,
+    keyPlayers: [
+      { name: 'Milos Uzan', position: 'G', ppg: 16.8, rpg: 3.4, apg: 5.2, year: 'Jr' },
+      { name: "J'Wan Roberts", position: 'F', ppg: 12.4, rpg: 7.8, apg: 2.1, year: 'Sr' },
+      { name: 'LJ Cryer', position: 'G', ppg: 13.6, rpg: 2.8, apg: 2.4, year: 'Sr' },
+    ],
     _dataSource: 'barttorvik-live',
   },
   {
@@ -793,6 +813,11 @@ const EAST_TEAMS: (MockTeam & { _dataSource?: string })[] = [
     titleProfileScore: 76,
     upsetVulnerability: 5,
     espnId: 150,
+    keyPlayers: [
+      { name: 'Cooper Flagg', position: 'F', ppg: 18.6, rpg: 7.8, apg: 4.2, year: 'Fr' },
+      { name: 'Khaman Maluach', position: 'C', ppg: 12.4, rpg: 9.2, apg: 1.2, year: 'Fr' },
+      { name: 'Kon Knueppel', position: 'G', ppg: 14.8, rpg: 4.6, apg: 2.8, year: 'Fr' },
+    ],
     _dataSource: 'barttorvik-live',
   },
   {
@@ -1051,6 +1076,11 @@ const EAST_TEAMS: (MockTeam & { _dataSource?: string })[] = [
     titleProfileScore: 53,
     upsetVulnerability: 16,
     espnId: 2305,
+    keyPlayers: [
+      { name: 'Hunter Dickinson', position: 'C', ppg: 18.4, rpg: 10.8, apg: 1.8, year: 'Sr' },
+      { name: 'Zeke Mayo', position: 'G', ppg: 16.2, rpg: 4.4, apg: 3.2, year: 'Sr' },
+      { name: 'AJ Storr', position: 'G', ppg: 14.6, rpg: 4.8, apg: 2.4, year: 'Jr' },
+    ],
     _dataSource: 'barttorvik-live',
   },
   {
@@ -1223,6 +1253,11 @@ const EAST_TEAMS: (MockTeam & { _dataSource?: string })[] = [
     titleProfileScore: 70,
     upsetVulnerability: 9,
     espnId: 127,
+    keyPlayers: [
+      { name: 'Jaxon Kohler', position: 'C', ppg: 14.8, rpg: 8.4, apg: 2.2, year: 'Sr' },
+      { name: 'Coen Carr', position: 'G', ppg: 13.2, rpg: 4.6, apg: 2.8, year: 'So' },
+      { name: 'Gehrig Norris', position: 'G', ppg: 11.4, rpg: 3.8, apg: 3.6, year: 'Fr' },
+    ],
     _dataSource: 'barttorvik-live',
   },
   {
@@ -1395,6 +1430,11 @@ const EAST_TEAMS: (MockTeam & { _dataSource?: string })[] = [
     titleProfileScore: 63,
     upsetVulnerability: 6,
     espnId: 41,
+    keyPlayers: [
+      { name: 'Liam McNeeley', position: 'G', ppg: 14.2, rpg: 5.4, apg: 2.4, year: 'Fr' },
+      { name: 'Hassan Diarra', position: 'G', ppg: 12.8, rpg: 4.2, apg: 4.6, year: 'So' },
+      { name: 'Jaylin Stewart', position: 'G', ppg: 11.6, rpg: 3.8, apg: 2.2, year: 'Fr' },
+    ],
     _dataSource: 'barttorvik-live',
   },
   {
@@ -1486,6 +1526,11 @@ const WEST_TEAMS: (MockTeam & { _dataSource?: string })[] = [
     titleProfileScore: 74,
     upsetVulnerability: 5,
     espnId: 12,
+    keyPlayers: [
+      { name: 'Caleb Love', position: 'G', ppg: 17.8, rpg: 4.2, apg: 3.8, year: 'Gr' },
+      { name: 'Tobe Awaka', position: 'C', ppg: 12.4, rpg: 8.6, apg: 1.4, year: 'Jr' },
+      { name: "Anthony Dell'Orso", position: 'F', ppg: 10.8, rpg: 5.2, apg: 2.6, year: 'Jr' },
+    ],
     _dataSource: 'barttorvik-live',
   },
   {
@@ -1744,6 +1789,11 @@ const WEST_TEAMS: (MockTeam & { _dataSource?: string })[] = [
     titleProfileScore: 56,
     upsetVulnerability: 15,
     espnId: 8,
+    keyPlayers: [
+      { name: 'Adou Thiero', position: 'G', ppg: 17.2, rpg: 5.8, apg: 2.6, year: 'Jr' },
+      { name: 'Johnell Davis', position: 'G', ppg: 15.4, rpg: 4.4, apg: 3.2, year: 'Sr' },
+      { name: 'Karter Knox', position: 'F', ppg: 11.8, rpg: 5.6, apg: 1.8, year: 'So' },
+    ],
     _dataSource: 'barttorvik-live',
   },
   {
@@ -1959,6 +2009,11 @@ const WEST_TEAMS: (MockTeam & { _dataSource?: string })[] = [
     titleProfileScore: 59,
     upsetVulnerability: 11,
     espnId: 2250,
+    keyPlayers: [
+      { name: 'Ryan Nembhard', position: 'G', ppg: 17.4, rpg: 4.2, apg: 6.8, year: 'Sr' },
+      { name: 'Graham Ike', position: 'C', ppg: 16.8, rpg: 9.4, apg: 1.4, year: 'Gr' },
+      { name: 'Anton Watson', position: 'F', ppg: 12.2, rpg: 6.8, apg: 2.4, year: 'Sr' },
+    ],
     _dataSource: 'barttorvik-live',
   },
   {
@@ -2131,6 +2186,11 @@ const WEST_TEAMS: (MockTeam & { _dataSource?: string })[] = [
     titleProfileScore: 68,
     upsetVulnerability: 5,
     espnId: 2509,
+    keyPlayers: [
+      { name: 'Braden Smith', position: 'G', ppg: 15.6, rpg: 4.8, apg: 7.2, year: 'Jr' },
+      { name: 'Camden Heide', position: 'F', ppg: 13.2, rpg: 7.4, apg: 2.2, year: 'So' },
+      { name: 'Fletcher Loyer', position: 'G', ppg: 12.4, rpg: 2.8, apg: 3.4, year: 'Jr' },
+    ],
     _dataSource: 'barttorvik-live',
   },
   {
@@ -2222,6 +2282,11 @@ const MIDWEST_TEAMS: (MockTeam & { _dataSource?: string })[] = [
     titleProfileScore: 75,
     upsetVulnerability: 5,
     espnId: 130,
+    keyPlayers: [
+      { name: 'Danny Wolf', position: 'F', ppg: 15.8, rpg: 8.4, apg: 4.6, year: 'Jr' },
+      { name: 'Tre Donaldson', position: 'G', ppg: 14.2, rpg: 3.6, apg: 4.8, year: 'Jr' },
+      { name: 'Yaxel Lendeborg', position: 'C', ppg: 12.6, rpg: 8.8, apg: 1.2, year: 'Jr' },
+    ],
     _dataSource: 'barttorvik-live',
   },
   {
@@ -2523,6 +2588,11 @@ const MIDWEST_TEAMS: (MockTeam & { _dataSource?: string })[] = [
     titleProfileScore: 56,
     upsetVulnerability: 15,
     espnId: 333,
+    keyPlayers: [
+      { name: 'Mark Sears', position: 'G', ppg: 21.4, rpg: 4.2, apg: 4.8, year: 'Sr' },
+      { name: 'Labaron Philon', position: 'G', ppg: 15.6, rpg: 3.8, apg: 3.4, year: 'So' },
+      { name: 'Clifford Omoruyi', position: 'C', ppg: 12.4, rpg: 8.6, apg: 1.2, year: 'Sr' },
+    ],
     _dataSource: 'barttorvik-live',
   },
   {
@@ -2738,6 +2808,11 @@ const MIDWEST_TEAMS: (MockTeam & { _dataSource?: string })[] = [
     titleProfileScore: 59,
     upsetVulnerability: 11,
     espnId: 258,
+    keyPlayers: [
+      { name: 'Blake Buchanan', position: 'F', ppg: 14.4, rpg: 7.8, apg: 2.4, year: 'Jr' },
+      { name: 'Isaac McKneeley', position: 'G', ppg: 13.8, rpg: 3.4, apg: 3.6, year: 'Jr' },
+      { name: 'Andrew Rohde', position: 'G', ppg: 12.6, rpg: 3.2, apg: 4.2, year: 'Jr' },
+    ],
     _dataSource: 'barttorvik-live',
   },
   {
@@ -2910,6 +2985,11 @@ const MIDWEST_TEAMS: (MockTeam & { _dataSource?: string })[] = [
     titleProfileScore: 55,
     upsetVulnerability: 9,
     espnId: 66,
+    keyPlayers: [
+      { name: 'Tamin Lipsey', position: 'G', ppg: 14.8, rpg: 4.6, apg: 5.2, year: 'Jr' },
+      { name: 'Milan Momcilovic', position: 'G', ppg: 15.4, rpg: 4.8, apg: 2.6, year: 'So' },
+      { name: 'Dishon Jackson', position: 'C', ppg: 12.2, rpg: 8.4, apg: 1.2, year: 'So' },
+    ],
     _dataSource: 'barttorvik-live',
   },
   {

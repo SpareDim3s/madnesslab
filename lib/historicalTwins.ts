@@ -133,10 +133,82 @@ export function findBracketTwins(
     .slice(0, topN)
 }
 
-// ─── Legacy alias — kept so existing imports don't break ──────────────────────
-// The old `findHistoricalTwins` expected a static pool of past teams.
-// Pages that call this should migrate to findBracketTwins(team, allTeams).
-// This shim returns an empty array rather than crashing.
+// ─── Historical Twins (past tournament teams) ──────────────────────────────────
+
+import type { HistoricalTwinCandidate } from './historicalData'
+
+export interface HistoricalBracketMatch {
+  candidate: HistoricalTwinCandidate
+  similarityScore: number
+  distance: number
+  explanation: string
+}
+
+function buildHistoricalFeatureVector(c: HistoricalTwinCandidate): FeatureVec {
+  return {
+    adjEM:          normalize(c.adjEM,          BOUNDS.adjEM.min,          BOUNDS.adjEM.max),
+    seed:           normalize(c.seed,           BOUNDS.seed.min,           BOUNDS.seed.max),
+    adjDE:          normalize(c.adjDE,          BOUNDS.adjDE.min,          BOUNDS.adjDE.max),
+    adjOE:          normalize(c.adjOE,          BOUNDS.adjOE.min,          BOUNDS.adjOE.max),
+    efgPct:         0.5, // not tracked historically — neutral
+    threePointRate: normalize(c.threePointRate, BOUNDS.threePointRate.min, BOUNDS.threePointRate.max),
+  }
+}
+
+function buildHistoricalExplanation(team: MockTeam, c: HistoricalTwinCandidate): string {
+  const parts: string[] = []
+
+  if (Math.abs(team.seed - c.seed) <= 1) {
+    parts.push(`both seeded ${c.seed}`)
+  } else if (Math.abs(team.seed - c.seed) <= 3) {
+    parts.push(`similar seedings (${team.seed} vs ${c.seed})`)
+  }
+
+  const emDiff = Math.abs(team.stats.adjEM - c.adjEM)
+  if (emDiff < 2) {
+    parts.push(`nearly identical efficiency margin (${c.adjEM.toFixed(1)})`)
+  } else if (emDiff < 5) {
+    parts.push(`close efficiency margin (${c.adjEM.toFixed(1)} vs ${team.stats.adjEM.toFixed(1)})`)
+  }
+
+  if (team.stats.adjDE < 94 && c.adjDE < 94) parts.push('both anchored by elite defense')
+  if (team.stats.adjOE > 118 && c.adjOE > 118) parts.push('both elite offensive teams')
+
+  const resultLabel: Record<string, string> = {
+    Champion: '🏆 Won the title',
+    'Runner-up': 'Made the championship game',
+    F4: 'Made the Final Four',
+    E8: 'Reached the Elite Eight',
+    S16: 'Made the Sweet 16',
+    R32: 'Won in Round of 64',
+    R64: 'Lost in Round of 64',
+  }
+  parts.push(resultLabel[c.tournamentResult] ?? c.tournamentResult)
+
+  return `${c.teamName} ${c.year} (#${c.seed} seed) — ${parts.join(', ')}.`
+}
+
+export function findHistoricalBracketTwins(
+  team: MockTeam,
+  candidates: HistoricalTwinCandidate[],
+  topN = 3
+): HistoricalBracketMatch[] {
+  const teamVec = buildFeatureVector(team)
+
+  const scored = candidates.map(c => {
+    const cVec = buildHistoricalFeatureVector(c)
+    const distance = weightedEuclideanDistance(teamVec, cVec)
+    const similarityScore = distanceToSimilarity(distance)
+    const explanation = buildHistoricalExplanation(team, c)
+    return { candidate: c, similarityScore, distance, explanation }
+  })
+
+  return scored
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, topN)
+}
+
+// ─── Legacy alias ──────────────────────────────────────────────────────────────
 export function findHistoricalTwins(): BracketTwinMatch[] {
   return []
 }

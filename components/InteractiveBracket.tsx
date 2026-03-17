@@ -153,17 +153,15 @@ function TeamSlot({
     <button
       onClick={onClick}
       className={[
-        'group flex h-10 w-full items-center gap-1.5 rounded border px-2 text-left text-xs transition-all',
+        'group flex h-10 w-full items-center gap-1.5 rounded border px-2 text-left text-xs transition-all duration-150',
         picked
-          ? 'border-slate-400 bg-slate-50 font-semibold shadow-sm ring-1 ring-slate-300'
+          ? 'border-orange-400 bg-orange-50 font-bold shadow-md ring-2 ring-orange-200'
           : dimmed
-          ? 'border-gray-100 bg-gray-50 text-gray-300 opacity-50'
-          : 'border-gray-200 bg-white hover:border-gray-400 hover:bg-gray-50 hover:shadow-sm',
+          ? 'border-gray-100 bg-gray-50 opacity-35 cursor-default'
+          : 'border-gray-200 bg-white hover:border-orange-300 hover:bg-orange-50/40 hover:shadow-sm',
       ].join(' ')}
     >
-      <span
-        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded text-[10px] font-bold ${seedBg}`}
-      >
+      <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded text-[10px] font-bold ${picked ? 'bg-orange-500 text-white' : seedBg}`}>
         {team.seed}
       </span>
       {logoUrl && (
@@ -173,24 +171,20 @@ function TeamSlot({
           alt=""
           width={20}
           height={20}
-          className="h-5 w-5 shrink-0 object-contain"
+          className={`h-5 w-5 shrink-0 object-contain ${dimmed ? 'opacity-30' : ''}`}
           onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
         />
       )}
-      <span className="flex-1 truncate leading-tight">
+      <span className={`flex-1 truncate leading-tight ${picked ? 'text-orange-900' : dimmed ? 'text-gray-400' : 'text-gray-800'}`}>
         {team.abbreviation ?? team.name}
       </span>
       {probPct !== null && !dimmed && (
-        <span
-          className={`shrink-0 text-[10px] tabular-nums ${
-            picked ? 'font-semibold text-slate-600' : 'text-gray-400'
-          }`}
-        >
+        <span className={`shrink-0 text-[10px] tabular-nums font-medium ${picked ? 'text-orange-600' : 'text-gray-400'}`}>
           {probPct}%
         </span>
       )}
       {picked && (
-        <span className="shrink-0 text-slate-500 text-[10px]">✓</span>
+        <span className="shrink-0 text-orange-500 text-xs">✓</span>
       )}
     </button>
   )
@@ -397,70 +391,67 @@ function RegionBracket({
         {region} Region
       </h2>
       <div className="overflow-x-auto">
-        <div className="flex gap-2 pb-1" style={{ minWidth: '720px' }}>
-          {/* Round 1 */}
-          <div className="flex flex-col gap-2" style={{ width: '180px' }}>
-            <div className="mb-1 text-center text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-              Round of 64
+        <div className="flex gap-2 pb-1" style={{ minWidth: '760px', height: '680px' }}>
+
+          {/* Round 1 — 8 slots, each gets 1/8 height */}
+          <div className="flex flex-col" style={{ width: '185px' }}>
+            <div className="mb-1 text-center text-[10px] font-semibold uppercase tracking-wide text-gray-400">Round of 64</div>
+            <div className="flex flex-col flex-1">
+              {rounds.r1.map((g, i) => {
+                const [s1, s2] = SEED_PAIRS[i]
+                const ffTop = regionFF.find(p => p.seed === s1)
+                const ffBot = regionFF.find(p => p.seed === s2)
+                return (
+                  <div key={g.id} className="flex flex-1 flex-col justify-center px-0.5 py-0.5">
+                    <Matchup
+                      id={g.id}
+                      top={g.top}
+                      bottom={g.bottom}
+                      picks={picks}
+                      onPick={onPick}
+                      topPlaceholder={ffTop ? `#${s1} FF winner` : undefined}
+                      bottomPlaceholder={ffBot ? `#${s2} FF winner` : undefined}
+                    />
+                  </div>
+                )
+              })}
             </div>
-            {rounds.r1.map((g, i) => {
-              const [s1, s2] = SEED_PAIRS[i]
-              const ffTop = regionFF.find(p => p.seed === s1)
-              const ffBot = regionFF.find(p => p.seed === s2)
-              return (
-                <Matchup
-                  key={g.id}
-                  id={g.id}
-                  top={g.top}
-                  bottom={g.bottom}
-                  picks={picks}
-                  onPick={onPick}
-                  topPlaceholder={ffTop ? `#${s1} FF winner` : undefined}
-                  bottomPlaceholder={ffBot ? `#${s2} FF winner` : undefined}
-                />
-              )
-            })}
           </div>
 
-          {/* Round 2 */}
-          <div className="flex flex-col justify-around gap-2" style={{ width: '180px' }}>
-            <div className="mb-1 text-center text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-              Round of 32
-            </div>
-            <div className="flex flex-col gap-10 py-3">
+          {/* Round 2 — 4 slots, each gets 1/4 height = 2 R1 slots */}
+          <div className="flex flex-col" style={{ width: '185px' }}>
+            <div className="mb-1 text-center text-[10px] font-semibold uppercase tracking-wide text-gray-400">Round of 32</div>
+            <div className="flex flex-col flex-1">
               {rounds.r2.map((g) => (
-                <Matchup key={g.id} id={g.id} top={g.top} bottom={g.bottom} picks={picks} onPick={onPick} />
+                <div key={g.id} className="flex flex-1 flex-col justify-center px-0.5 py-0.5">
+                  <Matchup id={g.id} top={g.top} bottom={g.bottom} picks={picks} onPick={onPick} />
+                </div>
               ))}
             </div>
           </div>
 
-          {/* Sweet 16 */}
-          <div className="flex flex-col justify-around" style={{ width: '180px' }}>
-            <div className="mb-1 text-center text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-              Sweet 16
-            </div>
-            <div className="flex flex-col gap-32 py-8">
+          {/* Sweet 16 — 2 slots, each gets 1/2 height */}
+          <div className="flex flex-col" style={{ width: '185px' }}>
+            <div className="mb-1 text-center text-[10px] font-semibold uppercase tracking-wide text-gray-400">Sweet 16</div>
+            <div className="flex flex-col flex-1">
               {rounds.s16.map((g) => (
-                <Matchup key={g.id} id={g.id} top={g.top} bottom={g.bottom} picks={picks} onPick={onPick} />
+                <div key={g.id} className="flex flex-1 flex-col justify-center px-0.5 py-0.5">
+                  <Matchup id={g.id} top={g.top} bottom={g.bottom} picks={picks} onPick={onPick} />
+                </div>
               ))}
             </div>
           </div>
 
-          {/* Elite 8 */}
-          <div className="flex flex-col justify-center" style={{ width: '180px' }}>
-            <div className="mb-1 text-center text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-              Elite 8
-            </div>
-            <div className="py-24">
-              <Matchup
-                id={rounds.e8.id}
-                top={rounds.e8.top}
-                bottom={rounds.e8.bottom}
-                picks={picks}
-                onPick={onPick}
-              />
+          {/* Elite 8 — 1 slot, full height */}
+          <div className="flex flex-col" style={{ width: '185px' }}>
+            <div className="mb-1 text-center text-[10px] font-semibold uppercase tracking-wide text-gray-400">Elite 8</div>
+            <div className="flex flex-col flex-1">
+              <div className="flex flex-1 flex-col justify-center px-0.5 py-0.5">
+                <Matchup id={rounds.e8.id} top={rounds.e8.top} bottom={rounds.e8.bottom} picks={picks} onPick={onPick} />
+              </div>
             </div>
           </div>
+
         </div>
       </div>
     </div>

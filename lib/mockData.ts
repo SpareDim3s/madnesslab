@@ -47,6 +47,14 @@ export interface MockTeam {
   titleProfileScore: number
   upsetVulnerability: number
   espnId?: number
+  keyPlayers?: {
+    name: string
+    position: 'G' | 'F' | 'C'
+    ppg: number
+    rpg: number
+    apg: number
+    year: 'Fr' | 'So' | 'Jr' | 'Sr' | 'Gr'
+  }[]
 }
 
 // ─── SOUTH REGION ─────────────────────────────────────────────────────────────
@@ -67,6 +75,11 @@ const SOUTH_TEAMS: MockTeam[] = [
     recentForm: { last5wins: 5, last10wins: 9, streakType: 'W', streakLength: 7, avgMarginLast5: 14.2 },
     titleProfileScore: 88,
     upsetVulnerability: 18,
+    keyPlayers: [
+      { name: 'Johni Broome', position: 'C', ppg: 17.8, rpg: 10.2, apg: 2.4, year: 'Sr' },
+      { name: 'Tre Donaldson', position: 'G', ppg: 13.4, rpg: 3.8, apg: 4.6, year: 'Jr' },
+      { name: 'Dylan Cardwell', position: 'C', ppg: 8.2, rpg: 6.8, apg: 1.2, year: 'Jr' },
+    ],
   },
   {
     id: 'michigan-state',
@@ -276,7 +289,7 @@ const SOUTH_TEAMS: MockTeam[] = [
     titleProfileScore: 6,
     upsetVulnerability: 92,
   },
-  // First Four — Drake/NC State for 11, Alabama State for 16
+  // First Four — Drake/NC State for 11, Prairie View/Lehigh for 16
   {
     id: 'drake',
     name: 'Drake',
@@ -292,6 +305,57 @@ const SOUTH_TEAMS: MockTeam[] = [
     recentForm: { last5wins: 3, last10wins: 7, streakType: 'W', streakLength: 2, avgMarginLast5: 5.8 },
     titleProfileScore: 30,
     upsetVulnerability: 70,
+  },
+  {
+    id: 'nc-state',
+    name: 'NC State',
+    slug: 'nc-state',
+    abbreviation: 'NCST',
+    conference: 'ACC',
+    programTier: 'power',
+    primaryColor: '#CC0000',
+    seed: 11,
+    region: 'South',
+    isFirstFour: true,
+    stats: { adjOE: 113.2, adjDE: 103.8, adjEM: 9.4, tempo: 70.2, threePointRate: 0.37, threePointPct: 0.352, efgPct: 0.521, ftRate: 0.32, ftPct: 0.736, turnoverRate: 15.4, turnoverForcedRate: 16.8, offReboundRate: 29.2, defReboundRate: 69.8, sosRank: 64, luckFactor: 0.012, kenpomRank: 88 },
+    recentForm: { last5wins: 3, last10wins: 6, streakType: 'W', streakLength: 1, avgMarginLast5: 4.2 },
+    titleProfileScore: 26,
+    upsetVulnerability: 74,
+    espnId: 152,
+  },
+  {
+    id: 'prairie-view-am',
+    name: 'Prairie View A&M',
+    slug: 'prairie-view-am',
+    abbreviation: 'PVAM',
+    conference: 'SWAC',
+    programTier: 'low-major',
+    primaryColor: '#4B1979',
+    seed: 16,
+    region: 'South',
+    isFirstFour: true,
+    stats: { adjOE: 101.5, adjDE: 111.4, adjEM: -9.9, tempo: 68.0, threePointRate: 0.35, threePointPct: 0.332, efgPct: 0.504, ftRate: 0.32, ftPct: 0.720, turnoverRate: 17.0, turnoverForcedRate: 19.0, offReboundRate: 28.0, defReboundRate: 71.0, sosRank: 300, luckFactor: 0.000, kenpomRank: 320 },
+    recentForm: { last5wins: 1, last10wins: 3, streakType: 'W', streakLength: 1, avgMarginLast5: -7.3 },
+    titleProfileScore: 2,
+    upsetVulnerability: 95,
+    espnId: 2480,
+  },
+  {
+    id: 'lehigh',
+    name: 'Lehigh',
+    slug: 'lehigh',
+    abbreviation: 'LEH',
+    conference: 'Patriot',
+    programTier: 'low-major',
+    primaryColor: '#653819',
+    seed: 16,
+    region: 'South',
+    isFirstFour: true,
+    stats: { adjOE: 102.6, adjDE: 112.8, adjEM: -10.2, tempo: 66.4, threePointRate: 0.36, threePointPct: 0.338, efgPct: 0.498, ftRate: 0.30, ftPct: 0.716, turnoverRate: 16.4, turnoverForcedRate: 18.2, offReboundRate: 26.8, defReboundRate: 69.4, sosRank: 280, luckFactor: 0.000, kenpomRank: 310 },
+    recentForm: { last5wins: 1, last10wins: 3, streakType: 'L', streakLength: 2, avgMarginLast5: -8.1 },
+    titleProfileScore: 2,
+    upsetVulnerability: 95,
+    espnId: 122,
   },
 ]
 
@@ -537,6 +601,23 @@ const EAST_TEAMS: MockTeam[] = [
     recentForm: { last5wins: 4, last10wins: 7, streakType: 'W', streakLength: 4, avgMarginLast5: 5.8 },
     titleProfileScore: 4,
     upsetVulnerability: 94,
+  },
+  {
+    id: 'siena',
+    name: 'Siena',
+    slug: 'siena',
+    abbreviation: 'SIE',
+    conference: 'MAAC',
+    programTier: 'low-major',
+    primaryColor: '#006747',
+    seed: 16,
+    region: 'East',
+    isFirstFour: false,
+    stats: { adjOE: 107.2, adjDE: 108.9, adjEM: -1.7, tempo: 63.8, threePointRate: 0.34, threePointPct: 0.304, efgPct: 0.486, ftRate: 0.32, ftPct: 0.720, turnoverRate: 16.2, turnoverForcedRate: 19.0, offReboundRate: 34.4, defReboundRate: 79.9, sosRank: 290, luckFactor: 0.000, kenpomRank: 295 },
+    recentForm: { last5wins: 2, last10wins: 5, streakType: 'W', streakLength: 1, avgMarginLast5: -1.4 },
+    titleProfileScore: 3,
+    upsetVulnerability: 96,
+    espnId: 2561,
   },
 ]
 
@@ -784,6 +865,23 @@ const WEST_TEAMS: MockTeam[] = [
     titleProfileScore: 28,
     upsetVulnerability: 72,
   },
+  {
+    id: 'long-island',
+    name: 'Long Island',
+    slug: 'long-island',
+    abbreviation: 'LIU',
+    conference: 'NEC',
+    programTier: 'low-major',
+    primaryColor: '#000000',
+    seed: 16,
+    region: 'West',
+    isFirstFour: false,
+    stats: { adjOE: 103.6, adjDE: 109.8, adjEM: -6.1, tempo: 67.5, threePointRate: 0.37, threePointPct: 0.361, efgPct: 0.498, ftRate: 0.32, ftPct: 0.720, turnoverRate: 19.3, turnoverForcedRate: 19.0, offReboundRate: 37.5, defReboundRate: 77.6, sosRank: 310, luckFactor: 0.000, kenpomRank: 315 },
+    recentForm: { last5wins: 2, last10wins: 3, streakType: 'W', streakLength: 1, avgMarginLast5: -4.8 },
+    titleProfileScore: 2,
+    upsetVulnerability: 97,
+    espnId: 112358,
+  },
 ]
 
 // ─── MIDWEST REGION ────────────────────────────────────────────────────────────
@@ -1029,6 +1127,40 @@ const MIDWEST_TEAMS: MockTeam[] = [
     recentForm: { last5wins: 3, last10wins: 6, streakType: 'W', streakLength: 2, avgMarginLast5: 4.8 },
     titleProfileScore: 10,
     upsetVulnerability: 88,
+  },
+  {
+    id: 'umbc',
+    name: 'UMBC',
+    slug: 'umbc',
+    abbreviation: 'UMBC',
+    conference: 'America East',
+    programTier: 'low-major',
+    primaryColor: '#FFC20E',
+    seed: 16,
+    region: 'Midwest',
+    isFirstFour: true,
+    stats: { adjOE: 107.6, adjDE: 109.2, adjEM: -1.7, tempo: 67.6, threePointRate: 0.36, threePointPct: 0.359, efgPct: 0.492, ftRate: 0.32, ftPct: 0.720, turnoverRate: 17.9, turnoverForcedRate: 19.0, offReboundRate: 35.1, defReboundRate: 79.4, sosRank: 320, luckFactor: 0.000, kenpomRank: 290 },
+    recentForm: { last5wins: 2, last10wins: 5, streakType: 'W', streakLength: 1, avgMarginLast5: -1.3 },
+    titleProfileScore: 3,
+    upsetVulnerability: 96,
+    espnId: 2427,
+  },
+  {
+    id: 'howard',
+    name: 'Howard',
+    slug: 'howard',
+    abbreviation: 'HOW',
+    conference: 'MEAC',
+    programTier: 'low-major',
+    primaryColor: '#003A63',
+    seed: 16,
+    region: 'Midwest',
+    isFirstFour: true,
+    stats: { adjOE: 103.5, adjDE: 106.2, adjEM: -2.8, tempo: 67.2, threePointRate: 0.36, threePointPct: 0.347, efgPct: 0.474, ftRate: 0.32, ftPct: 0.720, turnoverRate: 16.9, turnoverForcedRate: 19.0, offReboundRate: 32.0, defReboundRate: 81.6, sosRank: 295, luckFactor: 0.000, kenpomRank: 300 },
+    recentForm: { last5wins: 2, last10wins: 4, streakType: 'L', streakLength: 1, avgMarginLast5: -5.2 },
+    titleProfileScore: 2,
+    upsetVulnerability: 97,
+    espnId: 2249,
   },
 ]
 

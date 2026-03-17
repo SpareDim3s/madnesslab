@@ -16,6 +16,12 @@ export function TeamProfileCard({ team, className, compact = false, showLink = t
   const { streakType, streakLength } = team.recentForm
   const hasRecord = (team.winsTotal ?? 0) + (team.lossesTotal ?? 0) > 0
   const record = hasRecord ? `${team.winsTotal}-${team.lossesTotal}` : null
+  const logoUrl = team.espnId
+    ? `https://a.espncdn.com/i/teamlogos/ncaa/500/${team.espnId}.png`
+    : null
+
+  // Top key player
+  const starPlayer = team.keyPlayers?.[0] ?? null
 
   const card = (
     <div className={cn(
@@ -26,19 +32,54 @@ export function TeamProfileCard({ team, className, compact = false, showLink = t
       {/* Header */}
       <div className="flex items-start justify-between gap-2 mb-3">
         <div className="flex items-center gap-3 min-w-0">
-          {/* Seed badge */}
-          <div className={cn(
-            'shrink-0 flex items-center justify-center rounded font-bold text-sm',
-            compact ? 'h-7 w-7' : 'h-9 w-9',
-            'bg-gray-800 border border-gray-700',
-            seedColor(team.seed)
-          )}>
-            {team.seed}
-          </div>
+          {/* Logo or seed badge */}
+          {logoUrl ? (
+            <div className={cn(
+              'shrink-0 flex items-center justify-center rounded-lg bg-white/5 border border-gray-800',
+              compact ? 'h-8 w-8' : 'h-11 w-11'
+            )}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={logoUrl}
+                alt={`${team.name} logo`}
+                width={compact ? 28 : 36}
+                height={compact ? 28 : 36}
+                className="object-contain"
+                onError={(e) => {
+                  const parent = (e.currentTarget as HTMLImageElement).parentElement
+                  if (parent) {
+                    parent.innerHTML = `<span class="text-sm font-bold ${seedColor(team.seed)}">${team.seed}</span>`
+                  }
+                }}
+              />
+            </div>
+          ) : (
+            <div className={cn(
+              'shrink-0 flex items-center justify-center rounded font-bold text-sm',
+              compact ? 'h-7 w-7' : 'h-9 w-9',
+              'bg-gray-800 border border-gray-700',
+              seedColor(team.seed)
+            )}>
+              {team.seed}
+            </div>
+          )}
+
           <div className="min-w-0">
-            <h3 className={cn('font-bold text-white truncate', compact ? 'text-sm' : 'text-base')}>
-              {team.name}
-            </h3>
+            <div className="flex items-center gap-1.5">
+              <h3 className={cn('font-bold text-white truncate', compact ? 'text-sm' : 'text-base')}>
+                {team.name}
+              </h3>
+              {/* Seed badge when logo is shown */}
+              {logoUrl && (
+                <span className={cn(
+                  'shrink-0 inline-flex items-center justify-center rounded text-xs font-bold bg-gray-800 border border-gray-700',
+                  compact ? 'h-4 w-4 text-[10px]' : 'h-5 w-5 text-[11px]',
+                  seedColor(team.seed)
+                )}>
+                  {team.seed}
+                </span>
+              )}
+            </div>
             <p className="text-xs text-gray-500 truncate">
               {team.conference} · {team.region}
             </p>
@@ -46,9 +87,11 @@ export function TeamProfileCard({ team, className, compact = false, showLink = t
         </div>
 
         {/* Tier badge */}
-        <span className={cn('shrink-0 inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium', tierBadge.color)}>
-          {compact ? team.programTier : tierBadge.label}
-        </span>
+        {!compact && (
+          <span className={cn('shrink-0 inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium', tierBadge.color)}>
+            {tierBadge.label}
+          </span>
+        )}
       </div>
 
       {!compact && (
@@ -72,6 +115,28 @@ export function TeamProfileCard({ team, className, compact = false, showLink = t
               </p>
             </div>
           </div>
+
+          {/* Star player row */}
+          {starPlayer && (
+            <div className="mb-3 flex items-center gap-2 rounded-lg border border-gray-800/60 bg-gray-800/30 px-3 py-2">
+              <div className="flex-1 min-w-0">
+                <span className="text-xs text-gray-500 mr-1.5">⭐</span>
+                <span className="text-xs font-semibold text-gray-200 truncate">{starPlayer.name}</span>
+                {starPlayer.position && (
+                  <span className="ml-1.5 text-[10px] text-gray-600">{starPlayer.position}</span>
+                )}
+              </div>
+              <div className="flex items-center gap-2 shrink-0 text-[11px] tabular-nums">
+                <span className="text-orange-400 font-bold">{starPlayer.ppg.toFixed(1)} ppg</span>
+                {starPlayer.rpg != null && starPlayer.rpg > 0 && (
+                  <span className="text-blue-400">{starPlayer.rpg.toFixed(1)} rpg</span>
+                )}
+                {starPlayer.apg != null && starPlayer.apg > 0 && (
+                  <span className="text-purple-400">{starPlayer.apg.toFixed(1)} apg</span>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Title profile + upset vuln */}
           <div className="flex items-center justify-between gap-2 mb-3">
@@ -112,6 +177,10 @@ export function TeamProfileCard({ team, className, compact = false, showLink = t
             )}
           </div>
         </>
+      )}
+
+      {compact && logoUrl && (
+        <p className="text-xs text-gray-500 truncate mt-0.5">{team.conference}</p>
       )}
     </div>
   )

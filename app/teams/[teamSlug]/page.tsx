@@ -74,18 +74,36 @@ export default function TeamPage({ params }: PageProps) {
       {/* Team header */}
       <div className="rounded-xl border border-gray-800 bg-gray-900/60 p-6 mb-6">
         <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-          {/* Seed + name */}
+          {/* Logo + seed + name */}
           <div className="flex items-center gap-4 flex-1">
             <div className={cn(
-              'flex h-16 w-16 items-center justify-center rounded-xl text-2xl font-extrabold border-2',
-              'bg-gray-800',
-              seedColor(team.seed),
+              'shrink-0 flex h-16 w-16 items-center justify-center rounded-xl border-2',
+              team.espnId ? 'bg-white/5' : 'bg-gray-800',
               team.seed <= 4 ? 'border-yellow-400/40' : team.seed <= 8 ? 'border-blue-400/30' : 'border-gray-700'
             )}>
-              {team.seed}
+              {team.espnId ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={`https://a.espncdn.com/i/teamlogos/ncaa/500/${team.espnId}.png`}
+                  alt={`${team.name} logo`}
+                  width={52}
+                  height={52}
+                  className="object-contain"
+                />
+              ) : (
+                <span className={cn('text-2xl font-extrabold', seedColor(team.seed))}>{team.seed}</span>
+              )}
             </div>
             <div>
-              <h1 className="text-3xl font-extrabold text-white">{team.name}</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-3xl font-extrabold text-white">{team.name}</h1>
+                <span className={cn(
+                  'inline-flex h-7 w-7 items-center justify-center rounded text-sm font-bold bg-gray-800 border border-gray-700',
+                  seedColor(team.seed)
+                )}>
+                  {team.seed}
+                </span>
+              </div>
               <div className="flex flex-wrap items-center gap-2 mt-1">
                 <span className="text-gray-400 text-sm">{team.conference}</span>
                 <span className="text-gray-600">·</span>

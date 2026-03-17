@@ -16,6 +16,7 @@ import {
 } from '@/lib/utils'
 import { ArrowLeft, TrendingUp, Shield, Zap, GitMerge, Target } from 'lucide-react'
 import Link from 'next/link'
+import { TeamLogoImg } from '@/components/TeamLogoImg'
 
 interface PageProps {
   params: { teamSlug: string }
@@ -82,14 +83,7 @@ export default function TeamPage({ params }: PageProps) {
               team.seed <= 4 ? 'border-yellow-400/40' : team.seed <= 8 ? 'border-blue-400/30' : 'border-gray-700'
             )}>
               {team.espnId ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={`https://a.espncdn.com/i/teamlogos/ncaa/500/${team.espnId}.png`}
-                  alt={`${team.name} logo`}
-                  width={52}
-                  height={52}
-                  className="object-contain"
-                />
+                <TeamLogoImg espnId={team.espnId} name={team.name} size={52} fallbackSeed={team.seed} />
               ) : (
                 <span className={cn('text-2xl font-extrabold', seedColor(team.seed))}>{team.seed}</span>
               )}

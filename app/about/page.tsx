@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { FlaskConical, Layers, Zap, GitMerge, Sparkles, Database, Code2 } from 'lucide-react'
 
 export const metadata = {

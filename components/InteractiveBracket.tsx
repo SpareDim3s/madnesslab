@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 type Region = 'South' | 'East' | 'West' | 'Midwest'
 
@@ -569,11 +569,37 @@ function CompletionMeter({ picks, totalMatchups }: { picks: Picks; totalMatchups
 
 // ----- main export -----
 
+// ----- URL share helpers -----
+
+function encodePicks(picks: Picks): string {
+  try {
+    return btoa(JSON.stringify(picks))
+  } catch {
+    return ''
+  }
+}
+
+function decodePicks(hash: string): Picks | null {
+  try {
+    const raw = hash.startsWith('#') ? hash.slice(1) : hash
+    if (!raw) return null
+    return JSON.parse(atob(raw)) as Picks
+  } catch {
+    return null
+  }
+}
+
+// ----- main export -----
+
 export default function InteractiveBracket({ teams }: { teams: BracketTeam[] }) {
   const ffPairs = useMemo(() => getFirstFourPairs(teams), [teams])
+  const [copied, setCopied] = useState(false)
 
   const [picks, setPicks] = useState<Picks>(() => {
     if (typeof window === 'undefined') return {}
+    // Priority: URL hash > localStorage
+    const hashPicks = decodePicks(window.location.hash)
+    if (hashPicks && Object.keys(hashPicks).length > 0) return hashPicks
     try {
       const saved = localStorage.getItem('madnesslab-picks-2026')
       return saved ? JSON.parse(saved) : {}
@@ -581,6 +607,16 @@ export default function InteractiveBracket({ teams }: { teams: BracketTeam[] }) 
       return {}
     }
   })
+
+  // Keep URL hash in sync (debounced)
+  useEffect(() => {
+    const encoded = encodePicks(picks)
+    if (Object.keys(picks).length > 0) {
+      history.replaceState(null, '', `#${encoded}`)
+    } else {
+      history.replaceState(null, '', window.location.pathname)
+    }
+  }, [picks])
 
   const handlePick = useCallback((matchupId: string, teamId: string) => {
     setPicks((prev) => {
@@ -607,8 +643,22 @@ export default function InteractiveBracket({ teams }: { teams: BracketTeam[] }) 
     } catch {}
   }
 
+  const handleShare = async () => {
+    const encoded = encodePicks(picks)
+    const url = `${window.location.origin}/bracket#${encoded}`
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2500)
+    } catch {
+      // fallback: select the URL from a prompt
+      window.prompt('Copy this link to share your bracket:', url)
+    }
+  }
+
   // 4 FF + 32 R1 + 16 R2 + 8 S16 + 4 E8 + 2 FF + 1 Champ = 67
   const TOTAL_MATCHUPS = 67
+  const filledCount = Object.keys(picks).length
 
   return (
     <div className="space-y-4">
@@ -624,6 +674,19 @@ export default function InteractiveBracket({ teams }: { teams: BracketTeam[] }) 
           <div className="hidden w-48 sm:block">
             <CompletionMeter picks={picks} totalMatchups={TOTAL_MATCHUPS} />
           </div>
+          {filledCount > 0 && (
+            <button
+              onClick={handleShare}
+              className={[
+                'rounded-lg border px-3 py-1.5 text-xs font-semibold transition',
+                copied
+                  ? 'border-green-300 bg-green-50 text-green-700'
+                  : 'border-orange-300 bg-orange-50 text-orange-700 hover:bg-orange-100',
+              ].join(' ')}
+            >
+              {copied ? '✓ Link copied!' : '🔗 Share Bracket'}
+            </button>
+          )}
           <button
             onClick={handleReset}
             className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-500 transition hover:bg-gray-50 hover:text-gray-700"

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import {
   TrendChartCard, SeedUpsetRatesChart, ChampionAdjEMChart, ConferenceChampionshipChart
 } from '@/components/TrendChartCard'

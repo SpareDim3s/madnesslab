@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { TeamProfileCard } from '@/components/TeamProfileCard'
 import { ALL_TEAMS, getTeamsByRegion } from '@/lib/mockData'
 import { Users } from 'lucide-react'

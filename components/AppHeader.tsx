@@ -9,6 +9,7 @@ import { useState } from 'react'
 const NAV_LINKS = [
   { href: '/bracket', label: 'Bracket' },
   { href: '/teams', label: 'Teams' },
+  { href: '/compare', label: 'Compare' },
   { href: '/trends', label: 'Trends' },
   { href: '/about', label: 'About' },
 ]

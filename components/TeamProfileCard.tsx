@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { cn, formatOdds, programTierBadge, seedColor } from '@/lib/utils'
 import { UpsetAlertBadge } from './UpsetAlertBadge'

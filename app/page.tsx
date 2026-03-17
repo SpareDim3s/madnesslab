@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { MetricCard } from '@/components/MetricCard'
 import { TeamProfileCard } from '@/components/TeamProfileCard'
 import { UpsetAlertBadge } from '@/components/UpsetAlertBadge'

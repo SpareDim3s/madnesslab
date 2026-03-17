@@ -1,3 +1,5 @@
+'use client'
+
 import { cn } from '@/lib/utils'
 import type { BracketTwinMatch } from '@/lib/historicalTwins'
 import { GitMerge } from 'lucide-react'

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { notFound } from 'next/navigation'
 import { TEAMS_BY_SLUG, TEAMS_BY_ID, ALL_TEAMS } from '@/lib/mockData'
 import { predictMatchup } from '@/lib/predictionEngine'

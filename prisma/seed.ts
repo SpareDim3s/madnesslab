@@ -59,10 +59,11 @@ async function main() {
     // Season stats
     await prisma.teamSeasonStats.upsert({
       where: { teamId: team.id },
-      update: { ...mockTeam.stats, titleProfileScore: mockTeam.titleProfileScore, upsetVulnerability: mockTeam.upsetVulnerability },
+      update: { ...mockTeam.stats, netRating: mockTeam.stats.adjOE - mockTeam.stats.adjDE, titleProfileScore: mockTeam.titleProfileScore, upsetVulnerability: mockTeam.upsetVulnerability },
       create: {
         teamId: team.id,
         ...mockTeam.stats,
+        netRating: mockTeam.stats.adjOE - mockTeam.stats.adjDE,
         titleProfileScore: mockTeam.titleProfileScore,
         upsetVulnerability: mockTeam.upsetVulnerability,
       },

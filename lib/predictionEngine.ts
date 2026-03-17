@@ -49,9 +49,13 @@ function computeBaseStrength(team: MockTeam): number {
   const sosBonus = Math.max(0, (50 - sosRank) / 50) * 1.5
   const sosAdj = sosBonus - sosPenalty
 
-  // Recent form bonus
+  // Recent form bonus — kept small so hot streaks don't override efficiency reality
   const { last5wins, last10wins, streakType, streakLength, avgMarginLast5 } = team.recentForm
-  const formScore = (last5wins / 5) * 2 + (last10wins / 10) * 1 + (streakType === 'W' ? streakLength * 0.1 : -streakLength * 0.1) + avgMarginLast5 * 0.05
+  const formScore = (last5wins / 5) * 0.8 + (last10wins / 10) * 0.4
+    + (streakType === 'W' ? Math.min(streakLength, 5) * 0.05 : -Math.min(streakLength, 5) * 0.05)
+    + avgMarginLast5 * 0.02
+
+  void kenpomRank // ranked by adjEM via kenpomRank; not used in base strength directly
 
   return emScore + sosAdj + formScore
 }
@@ -227,8 +231,8 @@ export function predictMatchup(team1: MockTeam, team2: MockTeam): MatchupPredict
   const strengthDiff = totalStrength1 - totalStrength2
   const logisticProb = 1 / (1 + Math.pow(10, -strengthDiff / 15))
 
-  // Blend with seed prior
-  const blendedProb = logisticProb * 0.80 + seedPrior1 * 0.20
+  // Blend with seed prior (30% weight — historical tournament data strongly shapes outcomes)
+  const blendedProb = logisticProb * 0.70 + seedPrior1 * 0.30
 
   // Apply chaos pull toward 50/50 based on volatility
   const finalProb1 = blendedProb * (2 - chaosMultiplier) / 2 + 0.5 * (chaosMultiplier - 1) / 2

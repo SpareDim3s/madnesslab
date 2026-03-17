@@ -39,8 +39,7 @@ export default function HomePage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-          Every bracket is wrong.{' '}
-          <span className="text-orange-400">Ours tells you why.</span>
+          MadnessLab <span className="text-orange-400">2026</span>
         </h1>
         <p className="mt-2 text-gray-400 text-base">
           Real T-Rank efficiency data · Monte Carlo simulations · 2026 NCAA Tournament

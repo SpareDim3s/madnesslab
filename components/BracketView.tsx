@@ -44,7 +44,7 @@ export function BracketView({ teams }: BracketViewProps) {
       const res = await fetch('/api/simulate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ numSims, lockedPicks: Object.fromEntries([...lockedPicks].map(id => [id, winners[id]])) }),
+        body: JSON.stringify({ numSims, lockedPicks: Object.fromEntries(Array.from(lockedPicks).map(id => [id, winners[id]])) }),
       })
       if (res.ok) {
         const data = await res.json() as { result: SimulationResult }

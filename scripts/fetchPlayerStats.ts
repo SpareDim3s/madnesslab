@@ -557,6 +557,7 @@ interface EspnInjuryResponse {
   injuries?: Array<{
     athlete?: { displayName?: string }
     status?: string
+    type?: string
     details?: {
       type?: string
       detail?: string

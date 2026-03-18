@@ -108,6 +108,176 @@ function winProb(team: BracketTeam, opp: BracketTeam): number {
   return 1 / (1 + Math.exp(-diff / 8))
 }
 
+// ─────────────────────────────────────────────────────────────
+//  ART NOUVEAU BADGE COMPONENTS
+// ─────────────────────────────────────────────────────────────
+
+/** Ornate Art Nouveau "FINAL FOUR" logo for the center column header */
+function FinalFourLogo() {
+  return (
+    <svg width="176" height="68" viewBox="0 0 176 68" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block', margin: '0 auto 8px' }}>
+      {/* Navy background */}
+      <rect x="2" y="2" width="172" height="64" rx="5" fill="#1a1625"/>
+      {/* Outer gold border */}
+      <rect x="2" y="2" width="172" height="64" rx="5" stroke="#a0832a" strokeWidth="1.5"/>
+      {/* Inner double border */}
+      <rect x="6.5" y="6.5" width="163" height="55" rx="3" stroke="#c4a84a" strokeWidth="0.6" opacity="0.7"/>
+
+      {/* Top ornamental bar */}
+      <line x1="26" y1="14" x2="150" y2="14" stroke="#a0832a" strokeWidth="0.5" opacity="0.6"/>
+      {/* Bottom ornamental bar */}
+      <line x1="26" y1="54" x2="150" y2="54" stroke="#a0832a" strokeWidth="0.5" opacity="0.6"/>
+
+      {/* Left diamond cluster */}
+      <polygon points="18,34 23,29 28,34 23,39" fill="#a0832a"/>
+      <polygon points="18,34 23,29 28,34 23,39" fill="#f0e8d0" opacity="0.25"/>
+      <circle cx="18" cy="34" r="1.5" fill="#c4a84a" opacity="0.5"/>
+      <circle cx="28" cy="34" r="1.5" fill="#c4a84a" opacity="0.5"/>
+
+      {/* Right diamond cluster */}
+      <polygon points="148,34 153,29 158,34 153,39" fill="#a0832a"/>
+      <polygon points="148,34 153,29 158,34 153,39" fill="#f0e8d0" opacity="0.25"/>
+      <circle cx="148" cy="34" r="1.5" fill="#c4a84a" opacity="0.5"/>
+      <circle cx="158" cy="34" r="1.5" fill="#c4a84a" opacity="0.5"/>
+
+      {/* "FINAL" text */}
+      <text x="88" y="28" textAnchor="middle" fill="#c4a84a" fontSize="9.5"
+        fontFamily="'Playfair Display', Georgia, serif" letterSpacing="6" fontWeight="700">
+        FINAL
+      </text>
+
+      {/* Center divider with flanking dots */}
+      <line x1="36" y1="35" x2="74" y2="35" stroke="#a0832a" strokeWidth="0.6"/>
+      <circle cx="80" cy="35" r="1.2" fill="#a0832a"/>
+      <circle cx="86" cy="35" r="2" fill="#c4a84a"/>
+      <circle cx="92" cy="35" r="1.2" fill="#a0832a"/>
+      <line x1="98" y1="35" x2="140" y2="35" stroke="#a0832a" strokeWidth="0.6"/>
+
+      {/* "FOUR" text */}
+      <text x="88" y="52" textAnchor="middle" fill="#f0e8d0" fontSize="17"
+        fontFamily="'Playfair Display', Georgia, serif" letterSpacing="7" fontWeight="700">
+        FOUR
+      </text>
+    </svg>
+  )
+}
+
+/** Trophy SVG — replaces the 🏆 emoji in the Championship header */
+function TrophySVG() {
+  return (
+    <svg width="22" height="26" viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 5, marginBottom: 2 }}>
+      <path d="M5 2 L5 11 Q5 18 11 18 Q17 18 17 11 L17 2 Z" fill="#c4a84a"/>
+      <path d="M5 2 L5 11 Q5 18 11 18 Q17 18 17 11 L17 2 Z" fill="white" opacity="0.15"/>
+      <path d="M5 4 Q1 4 1 8 Q1 12 5 12" stroke="#a0832a" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+      <path d="M17 4 Q21 4 21 8 Q21 12 17 12" stroke="#a0832a" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+      <rect x="9.5" y="18" width="3" height="4" fill="#a0832a"/>
+      <rect x="6" y="22" width="10" height="2.5" rx="1.2" fill="#a0832a"/>
+      <rect x="4" y="24" width="14" height="1.5" rx="0.8" fill="#c4a84a"/>
+      <polygon points="11,4 11.8,6.5 14.5,6.5 12.3,8 13.1,10.5 11,9 8.9,10.5 9.7,8 7.5,6.5 10.2,6.5" fill="#f0e8d0" opacity="0.85"/>
+    </svg>
+  )
+}
+
+/** Full Art Nouveau champion reveal card — shown when user picks their champion */
+function ChampionReveal({ team }: { team: BracketTeam }) {
+  const logoUrl = team.espnId
+    ? `https://a.espncdn.com/i/teamlogos/ncaa/500/${team.espnId}.png`
+    : null
+  return (
+    <div style={{ position: 'relative', background: '#1a1625', borderRadius: 8, border: '1.5px solid #a0832a', padding: '10px 8px 8px', overflow: 'hidden', marginTop: 8 }}>
+      {/* Inner double border */}
+      <div style={{ position: 'absolute', inset: 4, border: '0.5px solid rgba(196,168,74,0.4)', borderRadius: 5, pointerEvents: 'none' }}/>
+
+      {/* Arced "CHAMPION" text */}
+      <svg width="156" height="22" viewBox="0 0 156 22" style={{ display: 'block', margin: '0 auto' }}>
+        <defs>
+          <path id="champArc" d="M 10 20 A 68 68 0 0 1 146 20"/>
+        </defs>
+        <text fontSize="7.5" fontWeight="700" letterSpacing="3.5" fill="#c4a84a"
+          fontFamily="'Playfair Display', Georgia, serif">
+          <textPath href="#champArc">C H A M P I O N</textPath>
+        </text>
+      </svg>
+
+      {logoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={logoUrl} alt={team.name} width={44} height={44}
+          style={{ display: 'block', margin: '4px auto', objectFit: 'contain' }}
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+        />
+      ) : (
+        <div style={{ height: 12 }} />
+      )}
+
+      <div style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: '#f0e8d0', fontFamily: '"Playfair Display", serif', marginTop: 2, lineHeight: 1.2 }}>
+        {team.name}
+      </div>
+      <div style={{ textAlign: 'center', fontSize: 10, color: '#a0832a', marginTop: 3, letterSpacing: '0.05em' }}>
+        #{team.seed} Seed
+      </div>
+
+      {/* Laurel + star footer */}
+      <svg width="156" height="18" viewBox="0 0 156 18" style={{ display: 'block', margin: '6px auto 0' }}>
+        <ellipse cx="36" cy="9" rx="14" ry="4" fill="#a0832a" opacity="0.55" transform="rotate(-12, 36, 9)"/>
+        <ellipse cx="22" cy="10" rx="10" ry="3" fill="#a0832a" opacity="0.35" transform="rotate(-20, 22, 10)"/>
+        <ellipse cx="12" cy="11" rx="7" ry="2.5" fill="#a0832a" opacity="0.2" transform="rotate(-28, 12, 11)"/>
+        <ellipse cx="120" cy="9" rx="14" ry="4" fill="#a0832a" opacity="0.55" transform="rotate(12, 120, 9)"/>
+        <ellipse cx="134" cy="10" rx="10" ry="3" fill="#a0832a" opacity="0.35" transform="rotate(20, 134, 10)"/>
+        <ellipse cx="144" cy="11" rx="7" ry="2.5" fill="#a0832a" opacity="0.2" transform="rotate(28, 144, 11)"/>
+        <polygon points="78,2 79.8,7 85,7 80.9,10.2 82.4,15.2 78,12.4 73.6,15.2 75.1,10.2 71,7 76.2,7" fill="#c4a84a"/>
+      </svg>
+    </div>
+  )
+}
+
+/** Styled round-label badges for column headers */
+function RoundBadge({ label }: { label: string }) {
+  if (label === 'E8') {
+    return (
+      <div style={{ textAlign: 'center', marginBottom: 5 }}>
+        <svg width="148" height="22" viewBox="0 0 148 22" fill="none" style={{ display: 'block', margin: '0 auto' }}>
+          <rect x="1" y="1" width="146" height="20" rx="3.5" fill="#1a1625" stroke="#a0832a" strokeWidth="1.2"/>
+          <rect x="4" y="4" width="140" height="14" rx="2" stroke="#c4a84a" strokeWidth="0.5" opacity="0.6"/>
+          <polygon points="13,11 16,8 19,11 16,14" fill="#c4a84a" opacity="0.8"/>
+          <polygon points="129,11 132,8 135,11 132,14" fill="#c4a84a" opacity="0.8"/>
+          <text x="74" y="15" textAnchor="middle" fill="#c4a84a" fontSize="7.5"
+            fontFamily="'Playfair Display', Georgia, serif" letterSpacing="3" fontWeight="700">
+            ELITE EIGHT
+          </text>
+        </svg>
+      </div>
+    )
+  }
+  if (label === 'S16') {
+    return (
+      <div style={{ textAlign: 'center', marginBottom: 5 }}>
+        <svg width="148" height="22" viewBox="0 0 148 22" fill="none" style={{ display: 'block', margin: '0 auto' }}>
+          <rect x="1" y="1" width="146" height="20" rx="3.5" fill="#1e3a5f" stroke="#3b82f6" strokeWidth="1.2"/>
+          <rect x="4" y="4" width="140" height="14" rx="2" stroke="#60a5fa" strokeWidth="0.5" opacity="0.5"/>
+          <text x="74" y="15" textAnchor="middle" fill="#93c5fd" fontSize="7.5"
+            fontFamily="'Playfair Display', Georgia, serif" letterSpacing="3" fontWeight="700">
+            SWEET SIXTEEN
+          </text>
+        </svg>
+      </div>
+    )
+  }
+  if (label === 'R32') {
+    return (
+      <div style={{ fontSize: 8.5, fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.06em',
+        color: '#8b7d6b', textAlign: 'center' as const, marginBottom: 4 }}>
+        Round of 32
+      </div>
+    )
+  }
+  return (
+    <div style={{ fontSize: 8.5, fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.06em',
+      color: '#8b7d6b', textAlign: 'center' as const, marginBottom: 4 }}>
+      First Round
+    </div>
+  )
+}
+
 // ----- single team slot -----
 
 function TeamSlot({
@@ -467,7 +637,7 @@ function RegionBracket({
       <div style={{ display: 'flex', flexDirection: 'row', gap: 2, height: 640 }}>
         {orderedCols.map((col) => (
           <div key={col.label} className="flex flex-col" style={{ width: col.width }}>
-            <div style={ROUND_LABEL_STYLE}>{col.label}</div>
+            <RoundBadge label={col.label} />
             <div className="flex flex-col flex-1">
               {col.content}
             </div>
@@ -527,31 +697,14 @@ function FinalFour({
 
       {/* Championship */}
       <div style={{ width: 172 }}>
-        <div style={{ fontSize: 9, fontWeight: 700, color: '#1a1625', textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'center', marginBottom: 4, fontFamily: '"Playfair Display", serif' }}>
-          🏆 Championship
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
+          <TrophySVG />
+          <span style={{ fontSize: 9, fontWeight: 700, color: '#1a1625', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: '"Playfair Display", serif' }}>
+            Championship
+          </span>
         </div>
         <Matchup id={champ.id} top={champ.top} bottom={champ.bottom} picks={picks} onPick={onPick} />
-        {champWinner && (
-          <div style={{
-            marginTop: 8,
-            borderRadius: 8,
-            border: '1px solid #e8d5a3',
-            background: '#fdf8ed',
-            padding: '8px 12px',
-            textAlign: 'center',
-          }}>
-            <div style={{ fontSize: 10, color: '#a0832a', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Your Champion</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1625', marginTop: 2, fontFamily: '"Playfair Display", serif' }}>
-              {champWinner.name}
-            </div>
-            <div style={{ fontSize: 11, color: '#8b7d6b', marginTop: 2 }}>#{champWinner.seed} seed</div>
-            {champWinner.stats?.adjEM !== undefined && (
-              <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 3 }}>
-                adjEM {champWinner.stats.adjEM.toFixed(1)}
-              </div>
-            )}
-          </div>
-        )}
+        {champWinner && <ChampionReveal team={champWinner} />}
       </div>
 
       {/* SF2: West vs Midwest */}
@@ -794,9 +947,7 @@ export default function InteractiveBracket({ teams }: { teams: BracketTeam[] }) 
             borderRight: '1px solid #e8e0d0',
             padding: '8px 4px',
           }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: '#a0832a', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'center', marginBottom: 12, fontFamily: '"Playfair Display", serif' }}>
-              Final Four
-            </div>
+            <FinalFourLogo />
             <FinalFour teams={teams} picks={picks} onPick={handlePick} ffPairs={ffPairs} />
           </div>
 

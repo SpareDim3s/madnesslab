@@ -2642,7 +2642,7 @@ const WEST_TEAMS: (MockTeam & { _dataSource?: string })[] = [
     },
     titleProfileScore: 11,
     upsetVulnerability: 79,
-    espnId: 112358,
+    espnId: 2797,
     keyPlayers: [
         {
           name: "Jamal Fuller",
@@ -4277,7 +4277,7 @@ const MIDWEST_TEAMS: (MockTeam & { _dataSource?: string })[] = [
     },
     titleProfileScore: 55,
     upsetVulnerability: 19,
-    espnId: 44,
+    espnId: 2641,
     keyPlayers: [
         {
           name: "Greg Jones",

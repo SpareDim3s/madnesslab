@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { cn, formatOdds, programTierBadge, seedColor } from '@/lib/utils'
+import { cn, programTierBadge, seedColor } from '@/lib/utils'
 import { UpsetAlertBadge } from './UpsetAlertBadge'
 import type { MockTeam } from '@/lib/mockData'
 import { TrendingUp, Shield, Zap } from 'lucide-react'
@@ -22,24 +22,28 @@ export function TeamProfileCard({ team, className, compact = false, showLink = t
     ? `https://a.espncdn.com/i/teamlogos/ncaa/500/${team.espnId}.png`
     : null
 
-  // Top key player
   const starPlayer = team.keyPlayers?.[0] ?? null
 
   const card = (
-    <div className={cn(
-      'rounded-xl border border-gray-800 bg-gray-900/60 hover:border-gray-700 transition-all duration-200',
-      compact ? 'p-3' : 'p-5',
-      className
-    )}>
+    <div
+      className={cn('rounded-xl transition-all duration-200', compact ? 'p-3' : 'p-5', className)}
+      style={{
+        background: 'white',
+        border: '1px solid #e8e0d0',
+        boxShadow: '0 1px 4px rgba(26,22,37,0.04)',
+      }}
+      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#a0832a60' }}
+      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#e8e0d0' }}
+    >
       {/* Header */}
       <div className="flex items-start justify-between gap-2 mb-3">
         <div className="flex items-center gap-3 min-w-0">
           {/* Logo or seed badge */}
           {logoUrl ? (
-            <div className={cn(
-              'shrink-0 flex items-center justify-center rounded-lg bg-white/5 border border-gray-800',
-              compact ? 'h-8 w-8' : 'h-11 w-11'
-            )}>
+            <div
+              className={cn('shrink-0 flex items-center justify-center rounded-lg', compact ? 'h-8 w-8' : 'h-11 w-11')}
+              style={{ background: '#faf7f0', border: '1px solid #e8e0d0' }}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={logoUrl}
@@ -56,33 +60,33 @@ export function TeamProfileCard({ team, className, compact = false, showLink = t
               />
             </div>
           ) : (
-            <div className={cn(
-              'shrink-0 flex items-center justify-center rounded font-bold text-sm',
-              compact ? 'h-7 w-7' : 'h-9 w-9',
-              'bg-gray-800 border border-gray-700',
-              seedColor(team.seed)
-            )}>
+            <div
+              className={cn('shrink-0 flex items-center justify-center rounded font-bold text-sm', compact ? 'h-7 w-7' : 'h-9 w-9')}
+              style={{ background: '#1a1625', color: 'white' }}
+            >
               {team.seed}
             </div>
           )}
 
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <h3 className={cn('font-bold text-white truncate', compact ? 'text-sm' : 'text-base')}>
+              <h3
+                className={cn('font-bold truncate', compact ? 'text-sm' : 'text-base')}
+                style={{ color: '#1a1625', fontFamily: compact ? undefined : '"Playfair Display", serif' }}
+              >
                 {team.name}
               </h3>
               {/* Seed badge when logo is shown */}
               {logoUrl && (
-                <span className={cn(
-                  'shrink-0 inline-flex items-center justify-center rounded text-xs font-bold bg-gray-800 border border-gray-700',
-                  compact ? 'h-4 w-4 text-[10px]' : 'h-5 w-5 text-[11px]',
-                  seedColor(team.seed)
-                )}>
+                <span
+                  className={cn('shrink-0 inline-flex items-center justify-center rounded text-xs font-bold', compact ? 'h-4 w-4 text-[10px]' : 'h-5 w-5 text-[11px]')}
+                  style={{ background: '#1a1625', color: 'white' }}
+                >
                   {team.seed}
                 </span>
               )}
             </div>
-            <p className="text-xs text-gray-500 truncate">
+            <p className="text-xs truncate" style={{ color: '#9ca3af' }}>
               {team.conference} · {team.region}
             </p>
           </div>
@@ -90,7 +94,9 @@ export function TeamProfileCard({ team, className, compact = false, showLink = t
 
         {/* Tier badge */}
         {!compact && (
-          <span className={cn('shrink-0 inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium', tierBadge.color)}>
+          <span
+            className={cn('shrink-0 inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium', tierBadge.color)}
+          >
             {tierBadge.label}
           </span>
         )}
@@ -100,19 +106,25 @@ export function TeamProfileCard({ team, className, compact = false, showLink = t
         <>
           {/* Key stats row */}
           <div className="grid grid-cols-3 gap-2 mb-3">
-            <div className="text-center rounded-lg bg-gray-800/60 py-2">
-              <p className="text-xs text-gray-500 mb-0.5">adjEM</p>
-              <p className={cn('text-base font-bold', team.stats.adjEM > 25 ? 'text-emerald-400' : team.stats.adjEM > 15 ? 'text-green-400' : 'text-yellow-400')}>
+            <div className="text-center rounded-lg py-2" style={{ background: '#faf7f0', border: '1px solid #ede5d0' }}>
+              <p className="text-xs mb-0.5" style={{ color: '#9ca3af' }}>adjEM</p>
+              <p
+                className="text-base font-bold"
+                style={{ color: team.stats.adjEM > 25 ? '#16a34a' : team.stats.adjEM > 15 ? '#2563eb' : '#a0832a' }}
+              >
                 {team.stats.adjEM.toFixed(1)}
               </p>
             </div>
-            <div className="text-center rounded-lg bg-gray-800/60 py-2">
-              <p className="text-xs text-gray-500 mb-0.5">adjOE</p>
-              <p className="text-base font-bold text-blue-400">{team.stats.adjOE.toFixed(1)}</p>
+            <div className="text-center rounded-lg py-2" style={{ background: '#faf7f0', border: '1px solid #ede5d0' }}>
+              <p className="text-xs mb-0.5" style={{ color: '#9ca3af' }}>adjOE</p>
+              <p className="text-base font-bold" style={{ color: '#2563eb' }}>{team.stats.adjOE.toFixed(1)}</p>
             </div>
-            <div className="text-center rounded-lg bg-gray-800/60 py-2">
-              <p className="text-xs text-gray-500 mb-0.5">Record</p>
-              <p className={cn('text-base font-bold', (team.winsTotal ?? 0) / Math.max(1, (team.winsTotal ?? 0) + (team.lossesTotal ?? 0)) > 0.7 ? 'text-emerald-400' : 'text-yellow-400')}>
+            <div className="text-center rounded-lg py-2" style={{ background: '#faf7f0', border: '1px solid #ede5d0' }}>
+              <p className="text-xs mb-0.5" style={{ color: '#9ca3af' }}>Record</p>
+              <p
+                className="text-base font-bold"
+                style={{ color: (team.winsTotal ?? 0) / Math.max(1, (team.winsTotal ?? 0) + (team.lossesTotal ?? 0)) > 0.7 ? '#16a34a' : '#a0832a' }}
+              >
                 {record ?? '—'}
               </p>
             </div>
@@ -120,62 +132,69 @@ export function TeamProfileCard({ team, className, compact = false, showLink = t
 
           {/* Star player row */}
           {starPlayer && (
-            <div className="mb-3 flex items-center gap-2 rounded-lg border border-gray-800/60 bg-gray-800/30 px-3 py-2">
+            <div
+              className="mb-3 flex items-center gap-2 rounded-lg px-3 py-2"
+              style={{ background: '#faf7f0', border: '1px solid #ede5d0' }}
+            >
               <div className="flex-1 min-w-0">
-                <span className="text-xs text-gray-500 mr-1.5">⭐</span>
-                <span className="text-xs font-semibold text-gray-200 truncate">{starPlayer.name}</span>
+                <span className="text-xs mr-1.5">⭐</span>
+                <span className="text-xs font-semibold truncate" style={{ color: '#1a1625' }}>{starPlayer.name}</span>
                 {starPlayer.position && (
-                  <span className="ml-1.5 text-[10px] text-gray-600">{starPlayer.position}</span>
+                  <span className="ml-1.5 text-[10px]" style={{ color: '#9ca3af' }}>{starPlayer.position}</span>
                 )}
                 {starPlayer.injuryStatus && (
                   <span className={cn(
                     'ml-1.5 inline-flex items-center rounded px-1 py-0.5 text-[9px] font-bold uppercase tracking-wide',
                     starPlayer.injuryStatus === 'Out'
-                      ? 'bg-red-900/60 text-red-400 border border-red-800'
+                      ? 'bg-red-100 text-red-600 border border-red-200'
                       : starPlayer.injuryStatus === 'Doubtful'
-                      ? 'bg-orange-900/60 text-orange-400 border border-orange-800'
-                      : 'bg-yellow-900/60 text-yellow-400 border border-yellow-800'
+                      ? 'bg-orange-100 text-orange-600 border border-orange-200'
+                      : 'bg-yellow-100 text-yellow-700 border border-yellow-200'
                   )}>
                     {starPlayer.injuryStatus === 'Day-To-Day' ? 'DTD' : starPlayer.injuryStatus}
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-2 shrink-0 text-[11px] tabular-nums">
-                <span className={cn(
-                  'font-bold',
-                  starPlayer.injuryStatus === 'Out' ? 'text-red-400 line-through opacity-60' : 'text-orange-400'
-                )}>
+                <span
+                  className="font-bold"
+                  style={{
+                    color: starPlayer.injuryStatus === 'Out' ? '#dc2626' : '#a0832a',
+                    textDecoration: starPlayer.injuryStatus === 'Out' ? 'line-through' : 'none',
+                  }}
+                >
                   {starPlayer.ppg.toFixed(1)} ppg
                 </span>
                 {starPlayer.rpg != null && starPlayer.rpg > 0 && (
-                  <span className="text-blue-400">{starPlayer.rpg.toFixed(1)} rpg</span>
+                  <span style={{ color: '#2563eb' }}>{starPlayer.rpg.toFixed(1)} rpg</span>
                 )}
                 {starPlayer.apg != null && starPlayer.apg > 0 && (
-                  <span className="text-purple-400">{starPlayer.apg.toFixed(1)} apg</span>
+                  <span style={{ color: '#7c3aed' }}>{starPlayer.apg.toFixed(1)} apg</span>
                 )}
               </div>
             </div>
           )}
 
-          {/* Injury report — other injured players beyond the star */}
+          {/* Injury report */}
           {team.injuredPlayers && team.injuredPlayers.length > 0 && (
-            <div className="mb-3 rounded-lg border border-red-900/40 bg-red-950/20 px-3 py-2">
-              <p className="text-[10px] font-semibold text-red-400 uppercase tracking-wide mb-1.5">
+            <div
+              className="mb-3 rounded-lg px-3 py-2"
+              style={{ background: '#fff5f5', border: '1px solid #fecaca' }}
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-wide mb-1.5" style={{ color: '#dc2626' }}>
                 🏥 Injury Report
               </p>
               <div className="space-y-1">
                 {team.injuredPlayers.slice(0, 3).map(inj => (
                   <div key={inj.name} className="flex items-center justify-between gap-2">
-                    <span className="text-xs text-gray-300 truncate">{inj.name}</span>
+                    <span className="text-xs truncate" style={{ color: '#374151' }}>{inj.name}</span>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-[10px] text-gray-500">{inj.injury}</span>
+                      <span className="text-[10px]" style={{ color: '#9ca3af' }}>{inj.injury}</span>
                       <span className={cn(
                         'inline-flex items-center rounded px-1 py-0.5 text-[9px] font-bold uppercase',
-                        inj.status === 'Out'
-                          ? 'bg-red-900/60 text-red-400'
-                          : inj.status === 'Doubtful'
-                          ? 'bg-orange-900/60 text-orange-400'
-                          : 'bg-yellow-900/60 text-yellow-400'
+                        inj.status === 'Out' ? 'bg-red-100 text-red-600'
+                          : inj.status === 'Doubtful' ? 'bg-orange-100 text-orange-600'
+                          : 'bg-yellow-100 text-yellow-700'
                       )}>
                         {inj.status === 'Day-To-Day' ? 'DTD' : inj.status}
                       </span>
@@ -186,17 +205,20 @@ export function TeamProfileCard({ team, className, compact = false, showLink = t
             </div>
           )}
 
-          {/* Title profile + upset vuln */}
+          {/* Title profile + upset vulnerability */}
           <div className="flex items-center justify-between gap-2 mb-3">
             <div className="flex items-center gap-1.5">
-              <TrendingUp className="h-3.5 w-3.5 text-orange-400" />
-              <span className="text-xs text-gray-400">Title match:</span>
-              <span className="text-xs font-semibold text-orange-400">{team.titleProfileScore}%</span>
+              <TrendingUp className="h-3.5 w-3.5" style={{ color: '#a0832a' }} />
+              <span className="text-xs" style={{ color: '#9ca3af' }}>Title match:</span>
+              <span className="text-xs font-semibold" style={{ color: '#a0832a' }}>{team.titleProfileScore}%</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Shield className="h-3.5 w-3.5 text-blue-400" />
-              <span className="text-xs text-gray-400">Upset vuln:</span>
-              <span className={cn('text-xs font-semibold', team.upsetVulnerability > 60 ? 'text-red-400' : team.upsetVulnerability > 40 ? 'text-orange-400' : 'text-green-400')}>
+              <Shield className="h-3.5 w-3.5" style={{ color: '#2563eb' }} />
+              <span className="text-xs" style={{ color: '#9ca3af' }}>Upset vuln:</span>
+              <span
+                className="text-xs font-semibold"
+                style={{ color: team.upsetVulnerability > 60 ? '#dc2626' : team.upsetVulnerability > 40 ? '#ea580c' : '#16a34a' }}
+              >
                 {team.upsetVulnerability}%
               </span>
             </div>
@@ -206,16 +228,22 @@ export function TeamProfileCard({ team, className, compact = false, showLink = t
           <div className="flex items-center justify-between">
             {hasRecord ? (
               <div className="flex items-center gap-1.5">
-                <Zap className="h-3 w-3 text-gray-500" />
-                <span className="text-xs text-gray-400">Win%:</span>
-                <span className={cn('text-xs font-medium', (team.winsTotal! / (team.winsTotal! + team.lossesTotal!)) > 0.7 ? 'text-emerald-400' : 'text-yellow-400')}>
+                <Zap className="h-3 w-3" style={{ color: '#9ca3af' }} />
+                <span className="text-xs" style={{ color: '#9ca3af' }}>Win%:</span>
+                <span
+                  className="text-xs font-medium"
+                  style={{ color: (team.winsTotal! / (team.winsTotal! + team.lossesTotal!)) > 0.7 ? '#16a34a' : '#a0832a' }}
+                >
                   {Math.round((team.winsTotal! / (team.winsTotal! + team.lossesTotal!)) * 100)}%
                 </span>
               </div>
             ) : (
               <div className="flex items-center gap-1.5">
-                <Zap className="h-3 w-3 text-gray-500" />
-                <span className={cn('text-xs font-medium', streakType === 'W' ? 'text-emerald-400' : 'text-red-400')}>
+                <Zap className="h-3 w-3" style={{ color: '#9ca3af' }} />
+                <span
+                  className="text-xs font-medium"
+                  style={{ color: streakType === 'W' ? '#16a34a' : '#dc2626' }}
+                >
                   {streakType}{streakLength} streak
                 </span>
               </div>
@@ -228,14 +256,14 @@ export function TeamProfileCard({ team, className, compact = false, showLink = t
       )}
 
       {compact && logoUrl && (
-        <p className="text-xs text-gray-500 truncate mt-0.5">{team.conference}</p>
+        <p className="text-xs truncate mt-0.5" style={{ color: '#9ca3af' }}>{team.conference}</p>
       )}
     </div>
   )
 
   if (showLink) {
     return (
-      <Link href={`/teams/${team.slug}`} className="block hover:opacity-90 transition-opacity">
+      <Link href={`/teams/${team.slug}`} className="block hover:opacity-95 transition-opacity">
         {card}
       </Link>
     )

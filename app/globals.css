@@ -1,29 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 24.6 95% 53.1%;
-    --primary-foreground: 60 9.1% 97.8%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 24.6 95% 53.1%;
-    --radius: 0.5rem;
+    --background: 40 33% 93%;
+    --foreground: 256 20% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 256 20% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 256 20% 12%;
+    --primary: 36 57% 40%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 20% 90%;
+    --secondary-foreground: 256 20% 20%;
+    --muted: 40 20% 90%;
+    --muted-foreground: 256 10% 45%;
+    --accent: 218 91% 54%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 36 25% 83%;
+    --input: 36 25% 83%;
+    --ring: 218 91% 54%;
+    --radius: 0.75rem;
   }
 }
 
@@ -32,41 +34,47 @@
     @apply border-border;
   }
   body {
-    @apply bg-gray-950 text-gray-100 antialiased;
+    background-color: #f5f0e6;
+    color: #1a1625;
+    @apply antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  h1, h2, h3 {
+    font-family: 'Playfair Display', Georgia, serif;
   }
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar — warm parchment tones */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: #ede5d0;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #a0832a;
   border-radius: 3px;
+  opacity: 0.6;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #7a6218;
 }
 
-/* Bracket styles */
+/* Bracket styles — gold Art Nouveau lines */
 .bracket-connector {
-  border-right: 2px solid #334155;
+  border-right: 2px solid #a0832a40;
 }
 
 .bracket-line-top {
-  border-top: 2px solid #334155;
-  border-right: 2px solid #334155;
+  border-top: 2px solid #a0832a40;
+  border-right: 2px solid #a0832a40;
   height: 50%;
 }
 
 .bracket-line-bottom {
-  border-bottom: 2px solid #334155;
-  border-right: 2px solid #334155;
+  border-bottom: 2px solid #a0832a40;
+  border-right: 2px solid #a0832a40;
   height: 50%;
 }
 
@@ -78,4 +86,33 @@
 
 .sim-running {
   animation: sim-pulse 1.5s ease-in-out infinite;
+}
+
+/* Art Nouveau ornamental divider */
+.ornament-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #a0832a;
+  font-size: 18px;
+}
+.ornament-divider::before,
+.ornament-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #a0832a60, transparent);
+}
+
+/* Card base */
+.an-card {
+  background: white;
+  border: 1px solid #e8e0d0;
+  border-radius: 12px;
+}
+
+.an-card-parchment {
+  background: #faf7f0;
+  border: 1px solid #e8e0d0;
+  border-radius: 12px;
 }

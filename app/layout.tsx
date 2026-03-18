@@ -19,13 +19,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className="min-h-screen bg-gray-950 text-gray-100">
+    <html lang="en">
+      <body className="min-h-screen" style={{ backgroundColor: '#f5f0e6', color: '#1a1625' }}>
         <AppHeader />
         <main className="pt-16">
           {children}
         </main>
-        <footer className="mt-20 border-t border-gray-800 py-8 text-center text-sm text-gray-500">
+        <footer className="mt-20 border-t py-8 text-center text-sm" style={{ borderColor: '#e8e0d0', color: '#9ca3af' }}>
           <p>
             MadnessLab · 2025–26 T-Rank Data · For entertainment purposes only
           </p>

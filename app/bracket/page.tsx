@@ -9,8 +9,20 @@ export const metadata = {
 
 export default function BracketPage() {
   return (
-    <main className="min-h-screen bg-gray-50 px-3 py-6 sm:px-6">
+    <main className="min-h-screen px-3 py-6 sm:px-6" style={{ backgroundColor: '#f5f0e6' }}>
       <div className="mx-auto max-w-[1400px]">
+        {/* Page header */}
+        <div className="mb-6">
+          <h1
+            className="text-3xl font-bold"
+            style={{ fontFamily: '"Playfair Display", serif', color: '#1a1625' }}
+          >
+            Tournament Bracket
+          </h1>
+          <p className="text-sm mt-1" style={{ color: '#9ca3af' }}>
+            Simulate with AI · or fill your own picks
+          </p>
+        </div>
         <BracketPageClient teams={ALL_TEAMS as BracketTeam[]} />
       </div>
     </main>

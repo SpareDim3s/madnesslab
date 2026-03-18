@@ -40,6 +40,30 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        // Art Nouveau palette
+        parchment: {
+          50: '#fdfcf8',
+          100: '#f9f5ed',
+          DEFAULT: '#f5f0e6',
+          200: '#ede5d0',
+          300: '#ddd3b8',
+        },
+        navy: {
+          DEFAULT: '#1a1625',
+          50: '#f0eef6',
+          100: '#d8d4e8',
+          200: '#b0a8cc',
+          300: '#7a6fab',
+          400: '#4a4278',
+          500: '#2d2840',
+          muted: '#4a4560',
+        },
+        gold: {
+          DEFAULT: '#a0832a',
+          light: '#c4a84a',
+          dark: '#7a6218',
+          subtle: '#f0e8d0',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -48,6 +72,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['"Playfair Display"', 'Georgia', 'serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
       animation: {

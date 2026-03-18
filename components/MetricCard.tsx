@@ -11,39 +11,34 @@ interface MetricCardProps {
   className?: string
 }
 
-const accentClasses = {
-  orange: 'border-orange-500/30 bg-orange-500/5',
-  blue: 'border-blue-500/30 bg-blue-500/5',
-  red: 'border-red-500/30 bg-red-500/5',
-  green: 'border-green-500/30 bg-green-500/5',
-  purple: 'border-purple-500/30 bg-purple-500/5',
+const accentStyles: Record<string, { border: string; iconColor: string; valueColor: string }> = {
+  orange: { border: '#a0832a40', iconColor: '#a0832a', valueColor: '#1a1625' },
+  blue:   { border: '#2563eb40', iconColor: '#2563eb', valueColor: '#1a1625' },
+  red:    { border: '#dc262640', iconColor: '#dc2626', valueColor: '#1a1625' },
+  green:  { border: '#16a34a40', iconColor: '#16a34a', valueColor: '#1a1625' },
+  purple: { border: '#7c3aed40', iconColor: '#7c3aed', valueColor: '#1a1625' },
 }
 
-const iconAccentClasses = {
-  orange: 'text-orange-400',
-  blue: 'text-blue-400',
-  red: 'text-red-400',
-  green: 'text-green-400',
-  purple: 'text-purple-400',
-}
+export function MetricCard({ label, value, subValue, icon, accent = 'orange', className }: MetricCardProps) {
+  const styles = accentStyles[accent] ?? accentStyles.orange
 
-export function MetricCard({ label, value, subValue, icon, trend, accent = 'orange', className }: MetricCardProps) {
   return (
-    <div className={cn(
-      'rounded-xl border p-5 transition-colors',
-      accentClasses[accent],
-      className
-    )}>
+    <div
+      className={cn('rounded-xl p-5 transition-all', className)}
+      style={{ background: 'white', border: `1px solid ${styles.border}`, boxShadow: '0 1px 4px rgba(26,22,37,0.04)' }}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-1">{label}</p>
-          <p className="text-2xl font-bold text-white truncate">{value}</p>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: '#9ca3af' }}>{label}</p>
+          <p className="text-xl font-bold truncate" style={{ color: styles.valueColor, fontFamily: '"Playfair Display", serif' }}>
+            {value}
+          </p>
           {subValue && (
-            <p className="mt-1 text-sm text-gray-400 truncate">{subValue}</p>
+            <p className="mt-1 text-xs truncate" style={{ color: '#9ca3af' }}>{subValue}</p>
           )}
         </div>
         {icon && (
-          <div className={cn('shrink-0 mt-0.5', iconAccentClasses[accent])}>
+          <div className="shrink-0 mt-0.5" style={{ color: styles.iconColor }}>
             {icon}
           </div>
         )}

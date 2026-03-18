@@ -12,6 +12,15 @@ export async function POST() {
     // 200 runs for stable championship odds
     const odds = runSimulation(teams, 200)
 
+    // Extract R64 winners (32 teams that won their first-round game)
+    const r32WinnerIds = new Set<string>()
+    for (const game of single.games) {
+      if (game.gameId.startsWith('r64_')) {
+        r32WinnerIds.add(game.winnerId)
+      }
+    }
+    const r32Winners = teams.filter(t => r32WinnerIds.has(t.id))
+
     // Extract R64 upsets (game IDs like r64_South_1v16)
     const r64Upsets: Array<{
       region: string
@@ -73,6 +82,7 @@ export async function POST() {
       finalFour: single.finalFour,
       eliteEight: single.eliteEight,
       sweet16: single.sweet16,
+      r32Winners,
       r64Upsets,
       lateUpsets,
       titleOdds: odds.teams.slice(0, 12),

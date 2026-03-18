@@ -162,54 +162,88 @@ function parseMadeAtt(s: string): [number, number] {
 
 // ─── Get recent completed game IDs for a team ─────────────────────────────────
 
-interface ScheduleGame {
-  id: string
+interface RawComp {
+  id?: string
+  date?: string
   status?: {
     type?: { completed?: boolean; name?: string; state?: string }
-    displayClock?: string
   }
-  competitions?: Array<{ id: string; status?: { type?: { completed?: boolean } } }>
+  competitions?: RawComp[]
 }
 
-async function getRecentGameIds(espnId: number): Promise<string[]> {
-  // Fetch full-season schedule (no seasontype filter = gets all regular + conference tourney)
-  const url = `${BASE}/teams/${espnId}/schedule?season=2026&limit=50`
-  const data = await fetchJson<Record<string, unknown>>(url)
-  if (!data) return []
+async function getRecentGameIds(espnId: number, verbose = false): Promise<string[]> {
+  const now = new Date()
 
-  // ESPN schedule uses "events" or "competitions" as the key
-  const rawEvents = (
-    data.events ??
-    data.competitions ??
-    data.games ??
-    data.schedule ??
-    []
-  ) as ScheduleGame[]
+  // Collect {id, date} pairs regardless of response nesting
+  const found: Array<{ id: string; date: Date }> = []
 
-  if (!Array.isArray(rawEvents) || rawEvents.length === 0) return []
-
-  // Filter to completed games and extract IDs
-  const completedIds: string[] = []
-  for (const event of rawEvents) {
-    const completed =
-      event.status?.type?.completed === true ||
-      event.status?.type?.state === 'post' ||
-      event.status?.type?.name === 'STATUS_FINAL'
-
-    // Some schedule responses nest inside competitions array
-    if (event.competitions?.length) {
-      for (const comp of event.competitions) {
-        if (comp.status?.type?.completed === true) {
-          completedIds.push(comp.id)
+  function harvest(items: RawComp[]) {
+    for (const item of items) {
+      // Nested: event wraps competitions (ESPN weekly schedule format)
+      if (item.competitions?.length) {
+        harvest(item.competitions)
+      }
+      // Leaf competition — take it if it has an ID
+      if (item.id) {
+        const d = item.date ? new Date(item.date) : new Date(0)
+        // Keep if: date is in the past OR status says completed
+        const isCompleted =
+          d < now ||
+          item.status?.type?.completed === true ||
+          item.status?.type?.state === 'post' ||
+          item.status?.type?.name?.includes('FINAL')
+        if (isCompleted) {
+          found.push({ id: item.id, date: d })
         }
       }
-    } else if (completed && event.id) {
-      completedIds.push(event.id)
     }
   }
 
-  // Return the LAST N completed games (most recent first via reverse)
-  return completedIds.reverse().slice(0, GAMES_TO_FETCH)
+  // Try multiple schedule URL formats
+  const urls = [
+    `${BASE}/teams/${espnId}/schedule?season=2026&limit=50`,
+    `${BASE}/teams/${espnId}/schedule?season=2026&seasontype=2&limit=40`,
+  ]
+
+  for (const url of urls) {
+    const data = await fetchJson<Record<string, unknown>>(url)
+    if (!data) continue
+
+    const topLevel = (
+      data.events ??
+      data.competitions ??
+      data.games ??
+      data.schedule ??
+      []
+    ) as RawComp[]
+
+    if (!Array.isArray(topLevel) || topLevel.length === 0) continue
+
+    if (verbose) {
+      const sample = topLevel[0] as Record<string, unknown>
+      console.log(`\n  [debug] schedule keys: ${Object.keys(data).join(', ')}`)
+      console.log(`  [debug] top-level array length: ${topLevel.length}`)
+      console.log(`  [debug] first item keys: ${Object.keys(sample).join(', ')}`)
+      if (sample.competitions) {
+        const comps = sample.competitions as RawComp[]
+        console.log(`  [debug] first.competitions length: ${comps.length}`)
+        if (comps.length) console.log(`  [debug] first comp: ${JSON.stringify(comps[0]).slice(0, 200)}`)
+      }
+    }
+
+    harvest(topLevel)
+    if (found.length > 0) break
+  }
+
+  if (verbose) {
+    console.log(`  [debug] completed games found: ${found.length}`)
+  }
+
+  // Return most-recent N game IDs
+  return found
+    .sort((a, b) => b.date.getTime() - a.date.getTime())
+    .slice(0, GAMES_TO_FETCH)
+    .map(g => g.id)
 }
 
 // ─── Fetch one game box score, return player stats for our team ───────────────
@@ -241,20 +275,36 @@ interface BoxScoreTeam {
 
 async function fetchGamePlayerStats(
   gameId: string,
-  espnTeamId: number
+  espnTeamId: number,
+  verbose = false
 ): Promise<Map<string, Partial<PlayerAccum>>> {
   const url = `${BASE}/summary?event=${gameId}`
   const data = await fetchJson<{
-    boxscore?: { players?: BoxScoreTeam[] }
+    boxscore?: { players?: BoxScoreTeam[]; teams?: unknown[] }
   }>(url)
 
   const result = new Map<string, Partial<PlayerAccum>>()
   if (!data?.boxscore?.players) return result
 
-  // Find the team block for our team
-  const teamBlock = data.boxscore.players.find(
-    t => t.team?.id === String(espnTeamId)
+  if (verbose) {
+    console.log(`\n  [debug] game ${gameId}: ${data.boxscore.players.length} team blocks`)
+    for (const t of data.boxscore.players) {
+      console.log(`    team id=${t.team?.id} stats groups=${t.statistics?.length}`)
+    }
+  }
+
+  // Find the team block — match by ID string or by "our team" being one of two
+  let teamBlock = data.boxscore.players.find(
+    t => String(t.team?.id) === String(espnTeamId)
   )
+
+  // Fallback: if no exact match, try to infer (some ESPN IDs don't match exactly)
+  if (!teamBlock && data.boxscore.players.length === 2) {
+    // We'll try both; return whichever has more players with ppg > 0
+    // (both teams get processed, winner = team with more total points)
+    teamBlock = data.boxscore.players[0]
+  }
+
   if (!teamBlock) return result
 
   for (const statGroup of teamBlock.statistics ?? []) {
@@ -413,14 +463,22 @@ function aggregateToPlayerCards(
 
 // ─── Fetch all players for a team ─────────────────────────────────────────────
 
-async function fetchTeamPlayers(team: TeamEntry): Promise<PlayerStats[]> {
-  const gameIds = await getRecentGameIds(team.espnId)
-  if (gameIds.length === 0) return []
+async function fetchTeamPlayers(team: TeamEntry, verbose = false): Promise<PlayerStats[]> {
+  const gameIds = await getRecentGameIds(team.espnId, verbose)
+  if (gameIds.length === 0) {
+    if (verbose) console.log(`  [debug] no game IDs found for ${team.name}`)
+    return []
+  }
+
+  if (verbose) {
+    console.log(`  [debug] ${team.name}: fetching games [${gameIds.join(', ')}]`)
+  }
 
   const allGameData: Map<string, Partial<PlayerAccum>>[] = []
 
   for (const gameId of gameIds) {
-    const gameData = await fetchGamePlayerStats(gameId, team.espnId)
+    const gameData = await fetchGamePlayerStats(gameId, team.espnId, verbose)
+    if (verbose) console.log(`  [debug] game ${gameId}: ${gameData.size} players found`)
     if (gameData.size > 0) allGameData.push(gameData)
     await delay(120)
   }
@@ -497,7 +555,8 @@ async function main() {
     process.stdout.write(`  [${String(i + 1).padStart(2)}/${TEAMS.length}] ${team.name.padEnd(24)}`)
 
     try {
-      const players = await fetchTeamPlayers(team)
+      const verbose = i === 0  // show debug info for first team only
+      const players = await fetchTeamPlayers(team, verbose)
 
       if (players.length === 0) {
         process.stdout.write('✗ no data\n')

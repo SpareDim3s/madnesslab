@@ -135,7 +135,7 @@ const TEAMS: TeamEntry[] = [
 const BASE = 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball'
 const HEADERS = { 'User-Agent': 'Mozilla/5.0 (compatible; MadnessLab/1.0)' }
 const GAMES_TO_FETCH = 5   // average across last N games
-const MIN_GAMES_PLAYED = 2 // player must appear in at least 2 games
+const MIN_GAMES_PLAYED = 1 // player must appear in at least 1 game
 
 function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -239,8 +239,11 @@ async function getRecentGameIds(espnId: number, verbose = false): Promise<string
     console.log(`  [debug] completed games found: ${found.length}`)
   }
 
-  // Return most-recent N game IDs
-  return found
+  // Deduplicate by ID (same game can appear as both event AND competition in ESPN's format)
+  const deduped = [...new Map(found.map(g => [g.id, g])).values()]
+
+  // Return most-recent N unique game IDs
+  return deduped
     .sort((a, b) => b.date.getTime() - a.date.getTime())
     .slice(0, GAMES_TO_FETCH)
     .map(g => g.id)
@@ -326,7 +329,9 @@ async function fetchGamePlayerStats(
     const astIdx  = idx(['assists'])
 
     for (const entry of statGroup.athletes ?? []) {
-      if (!entry.active || !entry.athlete || !entry.stats) continue
+      // Don't filter by `active` — that flag excludes bench players who did play
+      // Just check that athlete data and stats exist
+      if (!entry.athlete || !entry.stats) continue
 
       const ath = entry.athlete
       const stats = entry.stats
@@ -435,9 +440,10 @@ function aggregateToPlayerCards(
     const fgaPerGame = t.fga / t.games
     const ftaPerGame = t.fta / t.games
 
-    // True Shooting % = PTS / (2 × (FGA + 0.44 × FTA))
+    // True Shooting % = PTS / (2 × (FGA + 0.44 × FTA)) — cap at 0.99 for sanity
     const tsDenom = 2 * (t.fga + 0.44 * t.fta)
-    const ts = tsDenom > 5 ? r3(t.points / tsDenom) : undefined
+    const tsRaw = tsDenom > 5 ? t.points / tsDenom : undefined
+    const ts = tsRaw !== undefined ? r3(Math.min(0.99, tsRaw)) : undefined
 
     // 3PT%
     const threePtPct = t.tpa >= 3 ? r3(t.tpm / t.tpa) : undefined

@@ -13,7 +13,9 @@
     "db:studio": "prisma studio",
     "data:fetch": "tsx scripts/fetchTRankData.ts",
     "data:fetch:2026": "tsx scripts/fetchTRankData.ts",
-    "data:espn": "tsx scripts/fetchEspnStats.ts"
+    "data:espn": "tsx scripts/fetchEspnStats.ts",
+    "data:players": "tsx scripts/fetchPlayerStats.ts",
+    "data:debug": "tsx scripts/debugEspnApi.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.14.0",

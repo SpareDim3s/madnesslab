@@ -54,6 +54,10 @@ export interface MockTeam {
     rpg: number
     apg: number
     year: 'Fr' | 'So' | 'Jr' | 'Sr' | 'Gr'
+    // Advanced stats — most predictive for March Madness
+    threePtPct?: number       // 3-point % (0.35+ = dangerous shooter)
+    trueShootingPct?: number  // TS% = overall shooting efficiency (0.58+ = elite)
+    usagePct?: number         // % of team possessions used (25%+ = star, 30%+ = franchise)
   }[]
 }
 

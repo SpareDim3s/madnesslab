@@ -134,7 +134,7 @@ const TEAMS: TeamEntry[] = [
 
 const BASE = 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball'
 const HEADERS = { 'User-Agent': 'Mozilla/5.0 (compatible; MadnessLab/1.0)' }
-const GAMES_TO_FETCH = 5   // average across last N games
+const GAMES_TO_FETCH = 25  // average across last N games (full season ≈ 30-35 games)
 const MIN_GAMES_PLAYED = 1 // player must appear in at least 1 game
 
 function delay(ms: number): Promise<void> {
@@ -544,6 +544,143 @@ function patchKeyPlayers(teamId: string, espnId: number, players: PlayerStats[])
   fs.writeFileSync(filePath, content, 'utf-8')
 }
 
+// ─── Injury Report ────────────────────────────────────────────────────────────
+
+interface InjuryEntry {
+  name: string
+  status: 'Out' | 'Questionable' | 'Doubtful' | 'Day-To-Day'
+  injury: string
+  side?: string
+}
+
+interface EspnInjuryResponse {
+  injuries?: Array<{
+    athlete?: { displayName?: string }
+    status?: string
+    details?: {
+      type?: string
+      detail?: string
+      side?: string
+      returnDate?: string
+    }
+  }>
+  team?: {
+    injuries?: Array<{
+      athlete?: { displayName?: string }
+      status?: string
+      type?: string
+      details?: { type?: string; detail?: string; side?: string }
+    }>
+  }
+}
+
+function normalizeInjuryStatus(raw: string | undefined): InjuryEntry['status'] {
+  const s = (raw ?? '').toLowerCase()
+  if (s.includes('out')) return 'Out'
+  if (s.includes('doubt')) return 'Doubtful'
+  if (s.includes('day')) return 'Day-To-Day'
+  return 'Questionable'
+}
+
+async function fetchTeamInjuries(espnId: number): Promise<InjuryEntry[]> {
+  const urls = [
+    `${BASE}/teams/${espnId}/injuries`,
+    `${BASE}/teams/${espnId}/injuries?season=2026`,
+  ]
+  for (const url of urls) {
+    const data = await fetchJson<EspnInjuryResponse>(url)
+    if (!data) continue
+
+    const rawList = data.injuries ?? data.team?.injuries ?? []
+    if (rawList.length === 0) continue
+
+    return rawList
+      .filter(i => i.athlete?.displayName)
+      .map(i => ({
+        name: i.athlete!.displayName!,
+        status: normalizeInjuryStatus(i.status),
+        injury: i.details?.type ?? i.details?.detail ?? i.type ?? 'Injury',
+        ...(i.details?.side ? { side: i.details.side } : {}),
+      }))
+  }
+  return []
+}
+
+function patchInjuries(teamId: string, espnId: number, injuries: InjuryEntry[]): void {
+  const filePath = path.join(process.cwd(), 'lib', 'realData.ts')
+  let content = fs.readFileSync(filePath, 'utf-8')
+
+  const espnAnchor = `    espnId: ${espnId},`
+  const anchorIdx = content.indexOf(espnAnchor)
+  if (anchorIdx === -1) return
+
+  // Find the end of this team's object (closing brace of the team entry)
+  // We'll look for the next top-level }, after our anchor
+  const teamObjEnd = findTeamObjectEnd(content, anchorIdx)
+  if (teamObjEnd === -1) return
+
+  const timestamp = new Date().toISOString()
+  const injBlock = injuries.length > 0
+    ? `    injuredPlayers: [\n${injuries.map(inj => {
+        const side = inj.side ? `, side: '${inj.side}'` : ''
+        return `      { name: ${JSON.stringify(inj.name)}, status: '${inj.status}', injury: '${inj.injury}'${side} },`
+      }).join('\n')}\n    ],`
+    : `    injuredPlayers: [],`
+
+  const timestampBlock = `    injuryUpdatedAt: '${timestamp}',`
+
+  // Remove existing injuredPlayers / injuryUpdatedAt blocks if present
+  const teamChunk = content.slice(anchorIdx, teamObjEnd)
+
+  const stripBlock = (chunk: string, key: string): string => {
+    // Match "    key: ...,\n" — handles both single-line and multi-line (arrays)
+    const singleLine = new RegExp(`    ${key}: [^\\[\\n][^\\n]*\\n`, 'g')
+    // Multi-line array block
+    const startIdx = chunk.indexOf(`    ${key}: [`)
+    if (startIdx !== -1) {
+      const endIdx = chunk.indexOf('    ],\n', startIdx)
+      if (endIdx !== -1) {
+        return chunk.slice(0, startIdx) + chunk.slice(endIdx + '    ],\n'.length)
+      }
+    }
+    return chunk.replace(singleLine, '')
+  }
+
+  let newChunk = stripBlock(teamChunk, 'injuredPlayers')
+  newChunk = stripBlock(newChunk, 'injuryUpdatedAt')
+
+  // Insert new blocks just before the closing }
+  const insertAt = newChunk.lastIndexOf('\n  },')
+  if (insertAt === -1) return
+  newChunk = newChunk.slice(0, insertAt + 1) + injBlock + '\n' + timestampBlock + '\n' + newChunk.slice(insertAt + 1)
+
+  content = content.slice(0, anchorIdx) + newChunk + content.slice(teamObjEnd)
+  fs.writeFileSync(filePath, content, 'utf-8')
+}
+
+function findTeamObjectEnd(content: string, fromIdx: number): number {
+  // Find the matching closing }, for the team object starting near fromIdx
+  let depth = 0
+  let inString = false
+  let escape = false
+  for (let i = fromIdx; i < content.length; i++) {
+    const ch = content[i]
+    if (escape) { escape = false; continue }
+    if (ch === '\\' && inString) { escape = true; continue }
+    if (ch === '"' || ch === "'") { inString = !inString; continue }
+    if (inString) continue
+    if (ch === '{') depth++
+    if (ch === '}') {
+      depth--
+      if (depth < 0) {
+        // This } closes the team object
+        return i + 1
+      }
+    }
+  }
+  return -1
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -609,7 +746,32 @@ async function main() {
     }
   }
 
-  console.log('\n🎉 Restart your dev server (npm run dev) to see updated player cards!')
+  // ── Injury Report ─────────────────────────────────────────────────────────
+  console.log('\n🏥 Fetching injury reports...')
+  let injuryUpdated = 0
+  let injuryCount = 0
+
+  for (const team of TEAMS) {
+    try {
+      const injuries = await fetchTeamInjuries(team.espnId)
+      patchInjuries(team.id, team.espnId, injuries)
+      if (injuries.length > 0) {
+        injuryUpdated++
+        injuryCount += injuries.length
+        const names = injuries.map(i => `${i.name.split(' ').pop()} (${i.status})`).join(', ')
+        console.log(`  ⚠️  ${team.name.padEnd(22)} ${names}`)
+      }
+    } catch { /* skip */ }
+    await delay(100)
+  }
+
+  if (injuryCount === 0) {
+    console.log('  ✅ No injuries reported for any tournament team')
+  } else {
+    console.log(`\n  ${injuryCount} injured players across ${injuryUpdated} teams`)
+  }
+
+  console.log('\n🎉 Restart your dev server (npm run dev) to see updated player cards & injuries!')
 }
 
 main().catch(err => {

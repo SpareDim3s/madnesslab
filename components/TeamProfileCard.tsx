@@ -127,15 +127,61 @@ export function TeamProfileCard({ team, className, compact = false, showLink = t
                 {starPlayer.position && (
                   <span className="ml-1.5 text-[10px] text-gray-600">{starPlayer.position}</span>
                 )}
+                {starPlayer.injuryStatus && (
+                  <span className={cn(
+                    'ml-1.5 inline-flex items-center rounded px-1 py-0.5 text-[9px] font-bold uppercase tracking-wide',
+                    starPlayer.injuryStatus === 'Out'
+                      ? 'bg-red-900/60 text-red-400 border border-red-800'
+                      : starPlayer.injuryStatus === 'Doubtful'
+                      ? 'bg-orange-900/60 text-orange-400 border border-orange-800'
+                      : 'bg-yellow-900/60 text-yellow-400 border border-yellow-800'
+                  )}>
+                    {starPlayer.injuryStatus === 'Day-To-Day' ? 'DTD' : starPlayer.injuryStatus}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-2 shrink-0 text-[11px] tabular-nums">
-                <span className="text-orange-400 font-bold">{starPlayer.ppg.toFixed(1)} ppg</span>
+                <span className={cn(
+                  'font-bold',
+                  starPlayer.injuryStatus === 'Out' ? 'text-red-400 line-through opacity-60' : 'text-orange-400'
+                )}>
+                  {starPlayer.ppg.toFixed(1)} ppg
+                </span>
                 {starPlayer.rpg != null && starPlayer.rpg > 0 && (
                   <span className="text-blue-400">{starPlayer.rpg.toFixed(1)} rpg</span>
                 )}
                 {starPlayer.apg != null && starPlayer.apg > 0 && (
                   <span className="text-purple-400">{starPlayer.apg.toFixed(1)} apg</span>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Injury report — other injured players beyond the star */}
+          {team.injuredPlayers && team.injuredPlayers.length > 0 && (
+            <div className="mb-3 rounded-lg border border-red-900/40 bg-red-950/20 px-3 py-2">
+              <p className="text-[10px] font-semibold text-red-400 uppercase tracking-wide mb-1.5">
+                🏥 Injury Report
+              </p>
+              <div className="space-y-1">
+                {team.injuredPlayers.slice(0, 3).map(inj => (
+                  <div key={inj.name} className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-gray-300 truncate">{inj.name}</span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-[10px] text-gray-500">{inj.injury}</span>
+                      <span className={cn(
+                        'inline-flex items-center rounded px-1 py-0.5 text-[9px] font-bold uppercase',
+                        inj.status === 'Out'
+                          ? 'bg-red-900/60 text-red-400'
+                          : inj.status === 'Doubtful'
+                          ? 'bg-orange-900/60 text-orange-400'
+                          : 'bg-yellow-900/60 text-yellow-400'
+                      )}>
+                        {inj.status === 'Day-To-Day' ? 'DTD' : inj.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}

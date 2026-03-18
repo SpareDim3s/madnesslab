@@ -58,7 +58,17 @@ export interface MockTeam {
     threePtPct?: number       // 3-point % (0.35+ = dangerous shooter)
     trueShootingPct?: number  // TS% = overall shooting efficiency (0.58+ = elite)
     usagePct?: number         // % of team possessions used (25%+ = star, 30%+ = franchise)
+    injuryStatus?: 'Out' | 'Questionable' | 'Doubtful' | 'Day-To-Day'  // if injured
+    injuryDetail?: string     // e.g. "Ankle", "Knee"
   }[]
+  // Injury report — auto-updated daily via GitHub Actions
+  injuredPlayers?: Array<{
+    name: string
+    status: 'Out' | 'Questionable' | 'Doubtful' | 'Day-To-Day'
+    injury: string            // body part / reason
+    side?: string             // e.g. "Left", "Right"
+  }>
+  injuryUpdatedAt?: string    // ISO timestamp of last fetch
 }
 
 // ─── SOUTH REGION ─────────────────────────────────────────────────────────────

@@ -1,0 +1,45 @@
+name: Update Player Stats & Injuries
+
+on:
+  schedule:
+    # Daily at 7am ET (11:00 UTC) during March Madness
+    - cron: '0 11 * * *'
+  workflow_dispatch:
+    # Also runnable manually from GitHub Actions tab
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed to push updated realData.ts
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch player stats & injury report
+        run: npm run data:players
+        timeout-minutes: 20    # full season (25 games × 68 teams) takes ~10min
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git diff --quiet lib/realData.ts && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit & push updated data
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name  "MadnessLab Bot"
+          git config user.email "bot@madnesslab.app"
+          git add lib/realData.ts
+          git commit -m "chore: auto-update player stats & injuries $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push

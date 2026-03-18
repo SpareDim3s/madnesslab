@@ -195,10 +195,8 @@ export default function HomePage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Link
             href="/bracket"
-            className="group rounded-xl p-5 transition-all hover:shadow-md"
+            className="group rounded-xl p-5 transition-all hover:shadow-md hover:border-blue-200"
             style={{ background: 'white', border: '1px solid #e8e0d0' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = '#2563eb40' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = '#e8e0d0' }}
           >
             <div className="flex items-center gap-3 mb-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ background: '#eff6ff' }}>

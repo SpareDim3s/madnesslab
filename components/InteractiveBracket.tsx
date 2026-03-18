@@ -373,86 +373,106 @@ function RegionBracket({
   picks,
   onPick,
   ffPairs,
+  flip,
 }: {
   region: Region
   teams: BracketTeam[]
   picks: Picks
   onPick: (matchupId: string, teamId: string) => void
   ffPairs: FFPair[]
+  flip?: boolean
 }) {
   const rounds = buildRegionRounds(region, teams, picks, ffPairs)
-
-  // Find any FF pairs for this region so we can label TBD slots
   const regionFF = ffPairs.filter(p => p.region === region)
 
-  return (
-    <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
-      <h2 className="mb-3 border-b border-gray-100 pb-2 text-sm font-bold uppercase tracking-wider text-gray-700">
-        {region} Region
-      </h2>
-      <div className="overflow-x-auto">
-        <div className="flex gap-2 pb-1" style={{ minWidth: '760px', height: '680px' }}>
+  const ROUND_LABEL_STYLE: React.CSSProperties = {
+    fontSize: 9,
+    fontWeight: 600,
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.06em',
+    color: '#a0832a',
+    textAlign: 'center' as const,
+    marginBottom: 4,
+  }
 
-          {/* Round 1 — 8 slots, each gets 1/8 height */}
-          <div className="flex flex-col" style={{ width: '185px' }}>
-            <div className="mb-1 text-center text-[10px] font-semibold uppercase tracking-wide text-gray-400">Round of 64</div>
-            <div className="flex flex-col flex-1">
-              {rounds.r1.map((g, i) => {
-                const [s1, s2] = SEED_PAIRS[i]
-                const ffTop = regionFF.find(p => p.seed === s1)
-                const ffBot = regionFF.find(p => p.seed === s2)
-                return (
-                  <div key={g.id} className="flex flex-1 flex-col justify-center px-0.5 py-0.5">
-                    <Matchup
-                      id={g.id}
-                      top={g.top}
-                      bottom={g.bottom}
-                      picks={picks}
-                      onPick={onPick}
-                      topPlaceholder={ffTop ? `#${s1} FF winner` : undefined}
-                      bottomPlaceholder={ffBot ? `#${s2} FF winner` : undefined}
-                    />
-                  </div>
-                )
-              })}
-            </div>
+  const columns = [
+    {
+      label: 'R64',
+      width: 168,
+      content: rounds.r1.map((g, i) => {
+        const [s1, s2] = SEED_PAIRS[i]
+        const ffTop = regionFF.find(p => p.seed === s1)
+        const ffBot = regionFF.find(p => p.seed === s2)
+        return (
+          <div key={g.id} className="flex flex-1 flex-col justify-center px-0.5 py-0.5">
+            <Matchup
+              id={g.id}
+              top={g.top}
+              bottom={g.bottom}
+              picks={picks}
+              onPick={onPick}
+              topPlaceholder={ffTop ? `#${s1} FF winner` : undefined}
+              bottomPlaceholder={ffBot ? `#${s2} FF winner` : undefined}
+            />
           </div>
-
-          {/* Round 2 — 4 slots, each gets 1/4 height = 2 R1 slots */}
-          <div className="flex flex-col" style={{ width: '185px' }}>
-            <div className="mb-1 text-center text-[10px] font-semibold uppercase tracking-wide text-gray-400">Round of 32</div>
-            <div className="flex flex-col flex-1">
-              {rounds.r2.map((g) => (
-                <div key={g.id} className="flex flex-1 flex-col justify-center px-0.5 py-0.5">
-                  <Matchup id={g.id} top={g.top} bottom={g.bottom} picks={picks} onPick={onPick} />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Sweet 16 — 2 slots, each gets 1/2 height */}
-          <div className="flex flex-col" style={{ width: '185px' }}>
-            <div className="mb-1 text-center text-[10px] font-semibold uppercase tracking-wide text-gray-400">Sweet 16</div>
-            <div className="flex flex-col flex-1">
-              {rounds.s16.map((g) => (
-                <div key={g.id} className="flex flex-1 flex-col justify-center px-0.5 py-0.5">
-                  <Matchup id={g.id} top={g.top} bottom={g.bottom} picks={picks} onPick={onPick} />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Elite 8 — 1 slot, full height */}
-          <div className="flex flex-col" style={{ width: '185px' }}>
-            <div className="mb-1 text-center text-[10px] font-semibold uppercase tracking-wide text-gray-400">Elite 8</div>
-            <div className="flex flex-col flex-1">
-              <div className="flex flex-1 flex-col justify-center px-0.5 py-0.5">
-                <Matchup id={rounds.e8.id} top={rounds.e8.top} bottom={rounds.e8.bottom} picks={picks} onPick={onPick} />
-              </div>
-            </div>
-          </div>
-
+        )
+      }),
+    },
+    {
+      label: 'R32',
+      width: 168,
+      content: rounds.r2.map((g) => (
+        <div key={g.id} className="flex flex-1 flex-col justify-center px-0.5 py-0.5">
+          <Matchup id={g.id} top={g.top} bottom={g.bottom} picks={picks} onPick={onPick} />
         </div>
+      )),
+    },
+    {
+      label: 'S16',
+      width: 168,
+      content: rounds.s16.map((g) => (
+        <div key={g.id} className="flex flex-1 flex-col justify-center px-0.5 py-0.5">
+          <Matchup id={g.id} top={g.top} bottom={g.bottom} picks={picks} onPick={onPick} />
+        </div>
+      )),
+    },
+    {
+      label: 'E8',
+      width: 168,
+      content: [
+        <div key={rounds.e8.id} className="flex flex-1 flex-col justify-center px-0.5 py-0.5">
+          <Matchup id={rounds.e8.id} top={rounds.e8.top} bottom={rounds.e8.bottom} picks={picks} onPick={onPick} />
+        </div>
+      ],
+    },
+  ]
+
+  const orderedCols = flip ? [...columns].reverse() : columns
+
+  return (
+    <div style={{ padding: '0 0 4px 0' }}>
+      {/* Region label */}
+      <div style={{
+        fontSize: 11,
+        fontWeight: 700,
+        color: '#1a1625',
+        fontFamily: '"Playfair Display", Georgia, serif',
+        textAlign: flip ? 'right' : 'left',
+        padding: '4px 8px',
+        letterSpacing: '0.03em',
+      }}>
+        {region}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'row', gap: 2, height: 640 }}>
+        {orderedCols.map((col) => (
+          <div key={col.label} className="flex flex-col" style={{ width: col.width }}>
+            <div style={ROUND_LABEL_STYLE}>{col.label}</div>
+            <div className="flex flex-col flex-1">
+              {col.content}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -496,51 +516,50 @@ function FinalFour({
   })()
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-      <h2 className="mb-4 border-b border-gray-100 pb-2 text-sm font-bold uppercase tracking-wider text-gray-700">
-        Final Four &amp; Championship
-      </h2>
-
-      <div className="flex flex-wrap items-start justify-center gap-8">
-        {/* Semifinal 1 */}
-        <div style={{ minWidth: '180px' }}>
-          <div className="mb-1 text-center text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-            South vs East
-          </div>
-          <Matchup id={sf1.id} top={sf1.top} bottom={sf1.bottom} picks={picks} onPick={onPick} />
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '0 8px' }}>
+      {/* SF1: South vs East */}
+      <div style={{ width: 172 }}>
+        <div style={{ fontSize: 9, fontWeight: 600, color: '#a0832a', textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: 'center', marginBottom: 4 }}>
+          South · East
         </div>
+        <Matchup id={sf1.id} top={sf1.top} bottom={sf1.bottom} picks={picks} onPick={onPick} />
+      </div>
 
-        {/* Championship */}
-        <div style={{ minWidth: '200px' }}>
-          <div className="mb-1 text-center text-[10px] font-semibold uppercase tracking-wide text-gray-500">
-            Championship
-          </div>
-          <Matchup id={champ.id} top={champ.top} bottom={champ.bottom} picks={picks} onPick={onPick} />
-          {champWinner && (
-            <div className="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3 text-center shadow-sm">
-              <div className="text-[10px] uppercase tracking-wider text-gray-500">Your Champion</div>
-              <div className="mt-1 flex items-center justify-center gap-2">
-                <span className="text-xl font-bold text-gray-900">{champWinner.name}</span>
-                <span className="rounded bg-gray-200 px-1.5 py-0.5 text-xs font-semibold text-gray-600">
-                  #{champWinner.seed} seed
-                </span>
-              </div>
-              {champWinner.stats?.adjEM !== undefined && (
-                <div className="mt-1 text-xs text-gray-400">
-                  adjEM: {champWinner.stats.adjEM.toFixed(1)} · Off: {champWinner.stats.adjOE?.toFixed(1)} · Def: {champWinner.stats.adjDE?.toFixed(1)}
-                </div>
-              )}
+      {/* Championship */}
+      <div style={{ width: 172 }}>
+        <div style={{ fontSize: 9, fontWeight: 700, color: '#1a1625', textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'center', marginBottom: 4, fontFamily: '"Playfair Display", serif' }}>
+          🏆 Championship
+        </div>
+        <Matchup id={champ.id} top={champ.top} bottom={champ.bottom} picks={picks} onPick={onPick} />
+        {champWinner && (
+          <div style={{
+            marginTop: 8,
+            borderRadius: 8,
+            border: '1px solid #e8d5a3',
+            background: '#fdf8ed',
+            padding: '8px 12px',
+            textAlign: 'center',
+          }}>
+            <div style={{ fontSize: 10, color: '#a0832a', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Your Champion</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1625', marginTop: 2, fontFamily: '"Playfair Display", serif' }}>
+              {champWinner.name}
             </div>
-          )}
-        </div>
-
-        {/* Semifinal 2 */}
-        <div style={{ minWidth: '180px' }}>
-          <div className="mb-1 text-center text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-            West vs Midwest
+            <div style={{ fontSize: 11, color: '#8b7d6b', marginTop: 2 }}>#{champWinner.seed} seed</div>
+            {champWinner.stats?.adjEM !== undefined && (
+              <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 3 }}>
+                adjEM {champWinner.stats.adjEM.toFixed(1)}
+              </div>
+            )}
           </div>
-          <Matchup id={sf2.id} top={sf2.top} bottom={sf2.bottom} picks={picks} onPick={onPick} />
+        )}
+      </div>
+
+      {/* SF2: West vs Midwest */}
+      <div style={{ width: 172 }}>
+        <div style={{ fontSize: 9, fontWeight: 600, color: '#a0832a', textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: 'center', marginBottom: 4 }}>
+          West · Midwest
         </div>
+        <Matchup id={sf2.id} top={sf2.top} bottom={sf2.bottom} picks={picks} onPick={onPick} />
       </div>
     </div>
   )
@@ -663,10 +682,22 @@ export default function InteractiveBracket({ teams }: { teams: BracketTeam[] }) 
   return (
     <div className="space-y-4">
       {/* Header bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-white p-4 shadow-sm">
+      <div style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
+        borderRadius: 12,
+        border: '1px solid #e8e0d0',
+        background: '#ffffff',
+        padding: 16,
+      }}>
         <div>
-          <h1 className="text-xl font-bold tracking-tight">2026 NCAA Tournament Bracket</h1>
-          <p className="mt-0.5 text-xs text-gray-500">
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: '#1a1625', fontFamily: '"Playfair Display", Georgia, serif' }}>
+            2026 NCAA Tournament Bracket
+          </h1>
+          <p style={{ fontSize: 12, color: '#8b7d6b', marginTop: 2 }}>
             Start with the First Four play-ins, then fill your bracket. Picks auto-save.
           </p>
         </div>
@@ -677,19 +708,32 @@ export default function InteractiveBracket({ teams }: { teams: BracketTeam[] }) 
           {filledCount > 0 && (
             <button
               onClick={handleShare}
-              className={[
-                'rounded-lg border px-3 py-1.5 text-xs font-semibold transition',
-                copied
-                  ? 'border-green-300 bg-green-50 text-green-700'
-                  : 'border-orange-300 bg-orange-50 text-orange-700 hover:bg-orange-100',
-              ].join(' ')}
+              style={{
+                borderRadius: 8,
+                border: copied ? '1px solid #86efac' : '1px solid #2563eb',
+                background: copied ? '#f0fdf4' : '#2563eb',
+                color: copied ? '#166534' : '#ffffff',
+                padding: '6px 12px',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
             >
               {copied ? '✓ Link copied!' : '🔗 Share Bracket'}
             </button>
           )}
           <button
             onClick={handleReset}
-            className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-500 transition hover:bg-gray-50 hover:text-gray-700"
+            style={{
+              borderRadius: 8,
+              border: '1px solid #e8e0d0',
+              background: '#fdfcf8',
+              padding: '6px 12px',
+              fontSize: 12,
+              fontWeight: 500,
+              color: '#8b7d6b',
+              cursor: 'pointer',
+            }}
           >
             Reset
           </button>
@@ -702,30 +746,83 @@ export default function InteractiveBracket({ teams }: { teams: BracketTeam[] }) 
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-x-5 gap-y-1 px-1 text-[11px] text-gray-400">
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px 20px', padding: '0 4px', fontSize: 11, color: '#8b7d6b' }}>
         <span>Click a team to pick · click again to deselect</span>
-        <span><span className="font-medium text-gray-500">72%</span> = projected win probability (T-Rank)</span>
+        <span><span style={{ fontWeight: 600, color: '#4a4560' }}>72%</span> = projected win probability (T-Rank)</span>
       </div>
 
       {/* First Four — must pick these before R64 slots unlock */}
       <FirstFourSection teams={teams} picks={picks} onPick={handlePick} />
 
-      {/* Regions */}
-      <div className="space-y-4">
-        {REGIONS.map((region) => (
-          <RegionBracket
-            key={region}
-            region={region}
-            teams={teams}
-            picks={picks}
-            onPick={handlePick}
-            ffPairs={ffPairs}
-          />
-        ))}
-      </div>
+      {/* Full printed bracket — horizontal NCAA-style layout */}
+      <div style={{
+        borderRadius: 12,
+        border: '1px solid #e8e0d0',
+        background: '#ffffff',
+        padding: 16,
+        overflowX: 'auto',
+      }}>
+        <div style={{ minWidth: 1380, display: 'flex', gap: 0, alignItems: 'stretch' }}>
 
-      {/* Final Four */}
-      <FinalFour teams={teams} picks={picks} onPick={handlePick} ffPairs={ffPairs} />
+          {/* LEFT HALF: South (top) + East (bottom) — rounds flow L→R */}
+          <div style={{ flex: '0 0 680px', borderRight: '1px solid #e8e0d0' }}>
+            <RegionBracket
+              region="South"
+              teams={teams}
+              picks={picks}
+              onPick={handlePick}
+              ffPairs={ffPairs}
+              flip={false}
+            />
+            <div style={{ borderTop: '1px solid #f0e8d0', marginTop: 4 }} />
+            <RegionBracket
+              region="East"
+              teams={teams}
+              picks={picks}
+              onPick={handlePick}
+              ffPairs={ffPairs}
+              flip={false}
+            />
+          </div>
+
+          {/* CENTER: Final Four + Championship */}
+          <div style={{
+            flex: '0 0 196px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            borderRight: '1px solid #e8e0d0',
+            padding: '8px 4px',
+          }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: '#a0832a', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'center', marginBottom: 12, fontFamily: '"Playfair Display", serif' }}>
+              Final Four
+            </div>
+            <FinalFour teams={teams} picks={picks} onPick={handlePick} ffPairs={ffPairs} />
+          </div>
+
+          {/* RIGHT HALF: West (top) + Midwest (bottom) — rounds flow R→L */}
+          <div style={{ flex: '0 0 680px' }}>
+            <RegionBracket
+              region="West"
+              teams={teams}
+              picks={picks}
+              onPick={handlePick}
+              ffPairs={ffPairs}
+              flip={true}
+            />
+            <div style={{ borderTop: '1px solid #f0e8d0', marginTop: 4 }} />
+            <RegionBracket
+              region="Midwest"
+              teams={teams}
+              picks={picks}
+              onPick={handlePick}
+              ffPairs={ffPairs}
+              flip={true}
+            />
+          </div>
+
+        </div>
+      </div>
     </div>
   )
 }

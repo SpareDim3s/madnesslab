@@ -422,6 +422,9 @@ function BracketTeamSlot({
   }
 
   const displayName = team.abbreviation || team.name.split(' ').slice(-1)[0]
+  const logoUrl = team.espnId
+    ? `https://a.espncdn.com/i/teamlogos/ncaa/500/${team.espnId}.png`
+    : null
 
   return (
     <div
@@ -433,6 +436,23 @@ function BracketTeamSlot({
       }}
     >
       <span style={seedStyle}>{team.seed}</span>
+      {logoUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={logoUrl}
+          alt=""
+          width={14}
+          height={14}
+          style={{
+            width: 14,
+            height: 14,
+            objectFit: 'contain',
+            flexShrink: 0,
+            opacity: eliminated ? 0.3 : 1,
+          }}
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+        />
+      )}
       <span style={nameStyle}>{displayName}</span>
       {won && (
         <span style={{ fontSize: 7, color: '#a0832a', flexShrink: 0 }}>✦</span>

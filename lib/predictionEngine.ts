@@ -220,22 +220,24 @@ export function predictMatchup(team1: MockTeam, team2: MockTeam): MatchupPredict
 
   // Layer 4: Volatility
   const volatility = computeVolatilityScore(team1, team2)
-  const chaosMultiplier = 1 + (volatility / 100) * 0.3  // max 30% toward 50/50
+  // Max 12% pull toward 50/50 — preserves favorites without killing upsets
+  const v = (volatility / 100) * 0.12
 
   // Combine layers
-  // KenPom logistic (60%), matchup adj (25%), seed prior (15%)
   const totalStrength1 = base1 + adj1
   const totalStrength2 = base2 + adj2
 
-  // Logistic win probability from strength difference
+  // Logistic win probability — divisor of 22 keeps large adjEM gaps realistic
+  // (1 adjEM pt ≈ 0.45 expected pt margin; divisor=22 matches KenPom calibration)
   const strengthDiff = totalStrength1 - totalStrength2
-  const logisticProb = 1 / (1 + Math.pow(10, -strengthDiff / 15))
+  const logisticProb = 1 / (1 + Math.pow(10, -strengthDiff / 22))
 
-  // Blend with seed prior (30% weight — historical tournament data strongly shapes outcomes)
-  const blendedProb = logisticProb * 0.70 + seedPrior1 * 0.30
+  // Blend with seed prior (40% weight — historical seed outcomes are strong signals)
+  const blendedProb = logisticProb * 0.60 + seedPrior1 * 0.40
 
-  // Apply chaos pull toward 50/50 based on volatility
-  const finalProb1 = blendedProb * (2 - chaosMultiplier) / 2 + 0.5 * (chaosMultiplier - 1) / 2
+  // Apply chaos: pull blended probability toward 50/50 by v (max 12%)
+  // Correct formula: finalProb = blendedProb*(1-v) + 0.5*v
+  const finalProb1 = blendedProb * (1 - v) + 0.5 * v
   const clampedProb1 = Math.min(0.97, Math.max(0.03, finalProb1))
   const finalProb2 = 1 - clampedProb1
 
@@ -276,7 +278,7 @@ export function predictMatchup(team1: MockTeam, team2: MockTeam): MatchupPredict
     layer1Score: { team1: base1, team2: base2 },
     layer2Adjustments: adjustments,
     layer3Prior: seedPrior1,
-    layer4Volatility: chaosMultiplier,
+    layer4Volatility: 1 + v,
   }
 }
 

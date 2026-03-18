@@ -168,7 +168,13 @@ function WinProbBar({
             {p1 > 50 ? team1.name : team2.name}
           </span>
           {' '}projected to win
-          {p1 !== p2 ? ` · ${Math.abs(p1 - p2)} point spread` : ''}
+          {(() => {
+            const emDiff = Math.abs(team1.stats.adjEM - team2.stats.adjEM)
+            const avgTempo = (team1.stats.tempo + team2.stats.tempo) / 2
+            // ~0.45 pts per adjEM point, scaled by tempo (baseline 68 possessions)
+            const spread = Math.round(emDiff * 0.45 * (avgTempo / 68) * 10) / 10
+            return spread > 0.5 ? ` · by ${spread} pts` : ''
+          })()}
         </p>
       )}
     </div>

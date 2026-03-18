@@ -175,10 +175,13 @@ export function getUpsetRateForMatchup(seed1: number, seed2: number): number {
   const higher = Math.min(seed1, seed2)
   const lower = Math.max(seed1, seed2)
   const record = getSeedMatchupRecord(higher, lower)
-  // If no record found, approximate based on seed gap
+  // If no record found, use a calibrated fallback.
+  // Old formula (-gap*0.08) gave 1% for gap≥6, which over-favored the top seed.
+  // New formula is gentler: gap of 9 gives ~14% upset rate (reasonable for late rounds).
   if (!record) {
     const gap = lower - higher
-    return Math.max(0.01, 0.5 - gap * 0.08)
+    // Clamp between 8% (large gap) and 42% (tiny gap) to avoid degenerate extremes
+    return Math.max(0.08, Math.min(0.42, 0.5 - gap * 0.04))
   }
   return record.upsetRate
 }

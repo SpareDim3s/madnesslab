@@ -302,7 +302,7 @@ export function simulateSingleRun(
       if (!team1 || !team2) continue
 
       const pred = predictMatchup(team1, team2)
-      const winner = simulateGame(team1, team2, pred.team1WinProb)
+      const winner = simulateGame(team1, team2, pred.team1WinProb, 1)
       const higherSeed = Math.min(team1.seed, team2.seed)
       const wasUpset = winner.seed > higherSeed
 
@@ -317,7 +317,7 @@ export function simulateSingleRun(
         const t1 = bracket[i]
         const t2 = bracket[i + 1]
         const pred = predictMatchup(t1, t2)
-        const winner = simulateGame(t1, t2, pred.team1WinProb)
+        const winner = simulateGame(t1, t2, pred.team1WinProb, 2)
         r32Winners.push(winner)
         results.push({ gameId: `r32_${region}_${i}`, winnerId: winner.id, team1Prob: pred.team1WinProb, wasUpset: winner.seed > Math.min(t1.seed, t2.seed) })
       }
@@ -330,7 +330,7 @@ export function simulateSingleRun(
         const t1 = r32Winners[i]
         const t2 = r32Winners[i + 1]
         const pred = predictMatchup(t1, t2)
-        const winner = simulateGame(t1, t2, pred.team1WinProb)
+        const winner = simulateGame(t1, t2, pred.team1WinProb, 3)
         s16Winners.push(winner)
         sweet16Teams.push(t1, t2)
         results.push({ gameId: `s16_${region}_${i}`, winnerId: winner.id, team1Prob: pred.team1WinProb, wasUpset: winner.seed > Math.min(t1.seed, t2.seed) })
@@ -342,7 +342,7 @@ export function simulateSingleRun(
       const t1 = s16Winners[0]
       const t2 = s16Winners[1]
       const pred = predictMatchup(t1, t2)
-      const winner = simulateGame(t1, t2, pred.team1WinProb)
+      const winner = simulateGame(t1, t2, pred.team1WinProb, 4)
       finalFourTeams.push(winner)
       eliteEightTeams.push(t1, t2)
       results.push({ gameId: `e8_${region}`, winnerId: winner.id, team1Prob: pred.team1WinProb, wasUpset: winner.seed > Math.min(t1.seed, t2.seed) })
@@ -353,17 +353,17 @@ export function simulateSingleRun(
   let champion: MockTeam = teams[0]
   if (finalFourTeams.length >= 4) {
     const f4_1 = predictMatchup(finalFourTeams[0], finalFourTeams[1])
-    const f4Winner1 = simulateGame(finalFourTeams[0], finalFourTeams[1], f4_1.team1WinProb)
+    const f4Winner1 = simulateGame(finalFourTeams[0], finalFourTeams[1], f4_1.team1WinProb, 5)
 
     const f4_2 = predictMatchup(finalFourTeams[2], finalFourTeams[3])
-    const f4Winner2 = simulateGame(finalFourTeams[2], finalFourTeams[3], f4_2.team1WinProb)
+    const f4Winner2 = simulateGame(finalFourTeams[2], finalFourTeams[3], f4_2.team1WinProb, 5)
 
     results.push({ gameId: 'f4_game1', winnerId: f4Winner1.id, team1Prob: f4_1.team1WinProb, wasUpset: f4Winner1.seed > Math.min(finalFourTeams[0].seed, finalFourTeams[1].seed) })
     results.push({ gameId: 'f4_game2', winnerId: f4Winner2.id, team1Prob: f4_2.team1WinProb, wasUpset: f4Winner2.seed > Math.min(finalFourTeams[2].seed, finalFourTeams[3].seed) })
 
     // Championship
     const champ = predictMatchup(f4Winner1, f4Winner2)
-    champion = simulateGame(f4Winner1, f4Winner2, champ.team1WinProb)
+    champion = simulateGame(f4Winner1, f4Winner2, champ.team1WinProb, 6)
     results.push({ gameId: 'championship', winnerId: champion.id, team1Prob: champ.team1WinProb, wasUpset: champion.seed > Math.min(f4Winner1.seed, f4Winner2.seed) })
   }
 
@@ -376,8 +376,41 @@ export function simulateSingleRun(
   }
 }
 
-function simulateGame(team1: MockTeam, team2: MockTeam, team1WinProb: number): MockTeam {
-  return Math.random() < team1WinProb ? team1 : team2
+// round: 1=R64, 2=R32, 3=S16, 4=E8, 5=F4, 6=Championship
+function simulateGame(team1: MockTeam, team2: MockTeam, team1WinProb: number, round = 1): MockTeam {
+  let p = team1WinProb
+
+  // Round-depth calibration: in S16+, high seeds (9+) face a realistic headwind.
+  // Historical data shows double-digit seeds make Final Four <3% of the time per run.
+  // Each round beyond R32, shrink a double-digit seed's excess probability toward 50%.
+  if (round >= 3) {
+    const pullFactor = (round - 2) * 0.06   // 6% per round beyond R32
+    const t1High = team1.seed >= 9
+    const t2High = team2.seed >= 9
+
+    if (t1High && !t2High) {
+      // team1 is the high seed — pull their prob toward 0.5 (downward if p>0.5, upward if p<0.5)
+      p = p + (0.5 - p) * pullFactor
+    } else if (t2High && !t1High) {
+      // team2 is the high seed — pull p upward (giving team1 more of an edge)
+      p = p + (1 - p - 0.5) * pullFactor
+    }
+  }
+
+  // Hard cap: top seeds (1–3) should win at least 60% vs any double-digit seed in late rounds
+  if (round >= 3) {
+    const fav = team1.seed <= team2.seed ? 1 : 2
+    const favSeed = fav === 1 ? team1.seed : team2.seed
+    const undSeed = fav === 1 ? team2.seed : team1.seed
+    if (favSeed <= 3 && undSeed >= 10) {
+      const minFavProb = 0.70
+      if (fav === 1) p = Math.max(p, minFavProb)
+      else p = Math.min(p, 1 - minFavProb)
+    }
+  }
+
+  p = Math.min(0.96, Math.max(0.04, p))
+  return Math.random() < p ? team1 : team2
 }
 
 // ─── Multi-Run Simulation ─────────────────────────────────────────────────────

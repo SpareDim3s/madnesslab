@@ -39,9 +39,18 @@ function TeamRow({
 }) {
   if (!team) {
     return (
-      <div className={cn('flex items-center gap-2 py-2 px-3 rounded-md', compact ? 'min-h-[36px]' : 'min-h-[44px]', 'bg-gray-800/30 border border-dashed border-gray-700/50')}>
-        <div className="h-5 w-5 rounded bg-gray-700/50" />
-        <span className="text-xs text-gray-600 italic">TBD</span>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        padding: compact ? '6px 10px' : '8px 12px',
+        minHeight: compact ? 36 : 44,
+        borderRadius: 6,
+        background: '#f5f0e6',
+        border: '1px dashed #e8e0d0',
+      }}>
+        <div style={{ width: 20, height: 20, borderRadius: 4, background: '#e8e0d0' }} />
+        <span style={{ fontSize: 12, color: '#8b7d6b', fontStyle: 'italic' }}>TBD</span>
       </div>
     )
   }
@@ -49,33 +58,56 @@ function TeamRow({
   return (
     <div
       onClick={isClickable ? onClick : undefined}
-      className={cn(
-        'flex items-center justify-between gap-2 rounded-md px-3 transition-all',
-        compact ? 'py-2' : 'py-2.5',
-        isClickable && 'cursor-pointer',
-        isWinner && 'bg-emerald-500/10 border border-emerald-500/30',
-        isLoser && 'opacity-40',
-        !isWinner && !isLoser && isClickable && 'hover:bg-gray-700/40 border border-gray-700/30',
-        !isWinner && !isLoser && !isClickable && 'border border-gray-800/50',
-      )}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 8,
+        borderRadius: 6,
+        padding: compact ? '6px 10px' : '8px 12px',
+        cursor: isClickable ? 'pointer' : 'default',
+        transition: 'all 0.15s',
+        background: isWinner ? '#f0fdf4' : 'transparent',
+        border: isWinner ? '1px solid #86efac' : '1px solid #e8e0d0',
+        opacity: isLoser ? 0.4 : 1,
+      }}
     >
-      <div className="flex items-center gap-2 min-w-0">
-        <span className={cn('shrink-0 text-xs font-bold w-5 text-center', seedColor(team.seed))}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+        <span style={{
+          flexShrink: 0,
+          fontSize: 12,
+          fontWeight: 700,
+          width: 20,
+          textAlign: 'center',
+          color: team.seed <= 4 ? '#a0832a' : team.seed <= 8 ? '#2563eb' : '#8b7d6b',
+        }}>
           {team.seed}
         </span>
-        <span className={cn('font-medium truncate', compact ? 'text-sm' : 'text-sm', isWinner ? 'text-white' : 'text-gray-200')}>
+        <span style={{
+          fontWeight: 500,
+          fontSize: compact ? 13 : 13,
+          color: isWinner ? '#166534' : '#1a1625',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}>
           {team.name}
         </span>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
         {prob > 0 && (
-          <span className={cn('text-xs font-bold tabular-nums', winProbColor(prob))}>
+          <span style={{
+            fontSize: 12,
+            fontWeight: 700,
+            fontVariantNumeric: 'tabular-nums',
+            color: prob >= 0.65 ? '#2563eb' : prob >= 0.5 ? '#a0832a' : '#8b7d6b',
+          }}>
             {formatOdds(prob)}
           </span>
         )}
         {isWinner && (
-          <div className="h-2 w-2 rounded-full bg-emerald-400" />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#16a34a' }} />
         )}
       </div>
     </div>
@@ -101,22 +133,36 @@ export function MatchupCard({
 
   const isClickable = !!onSelectWinner && !isLocked && !!team1 && !!team2
 
+  const borderColor = upsetTier === 'high' ? '#fca5a5' : upsetTier === 'medium' ? '#fed7aa' : '#e8e0d0'
+
   return (
-    <div className={cn(
-      'rounded-lg border bg-gray-900/80 overflow-hidden transition-all duration-150',
-      upsetTier === 'high' ? 'border-red-500/30' : upsetTier === 'medium' ? 'border-orange-500/30' : 'border-gray-800',
-      className
-    )}>
+    <div style={{
+      borderRadius: 8,
+      border: `1px solid ${borderColor}`,
+      background: '#ffffff',
+      overflow: 'hidden',
+      transition: 'all 0.15s',
+    }} className={className}>
       {/* Header */}
       {!compact && (
-        <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-800 bg-gray-900/50">
-          <span className="text-xs text-gray-500 font-mono">
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '6px 12px',
+          borderBottom: '1px solid #e8e0d0',
+          background: '#fdfcf8',
+        }}>
+          <span style={{ fontSize: 11 }}>
             {upsetTier !== 'none' && <UpsetAlertBadge tier={upsetTier} />}
           </span>
-          <div className="flex items-center gap-2">
-            {isLocked && <Lock className="h-3 w-3 text-gray-500" />}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {isLocked && <Lock style={{ width: 12, height: 12, color: '#8b7d6b' }} />}
             {volatility > 0 && (
-              <span className={cn('text-xs', volatility > 60 ? 'text-red-400' : volatility > 40 ? 'text-orange-400' : 'text-gray-500')}>
+              <span style={{
+                fontSize: 11,
+                color: volatility > 60 ? '#dc2626' : volatility > 40 ? '#b45309' : '#8b7d6b',
+              }}>
                 {volatility > 60 ? '🌪️' : volatility > 40 ? '⚡' : ''} vol {volatility}
               </span>
             )}
@@ -125,7 +171,7 @@ export function MatchupCard({
       )}
 
       {/* Teams */}
-      <div className={cn('space-y-1', compact ? 'p-2' : 'p-3')}>
+      <div style={{ padding: compact ? 8 : 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
         <TeamRow
           team={team1}
           prob={team1Prob}
@@ -136,17 +182,17 @@ export function MatchupCard({
           compact={compact}
         />
 
-        {/* Divider with seed matchup odds */}
+        {/* Divider */}
         {!compact && team1 && team2 && prediction && (
-          <div className="flex items-center gap-2 px-1">
-            <div className="h-px flex-1 bg-gray-800" />
-            <span className="text-xs text-gray-600">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 4px' }}>
+            <div style={{ flex: 1, height: 1, background: '#e8e0d0' }} />
+            <span style={{ fontSize: 11, color: '#8b7d6b' }}>
               {Math.round(prediction.team2WinProb * 100)}% upset
             </span>
-            <div className="h-px flex-1 bg-gray-800" />
+            <div style={{ flex: 1, height: 1, background: '#e8e0d0' }} />
           </div>
         )}
-        {compact && <div className="h-px bg-gray-800" />}
+        {compact && <div style={{ height: 1, background: '#e8e0d0' }} />}
 
         <TeamRow
           team={team2}
@@ -159,12 +205,12 @@ export function MatchupCard({
         />
       </div>
 
-      {/* Footer with detail link */}
+      {/* Footer */}
       {!compact && team1 && team2 && (
-        <div className="border-t border-gray-800 px-3 py-1.5">
+        <div style={{ borderTop: '1px solid #e8e0d0', padding: '6px 12px' }}>
           <Link
             href={`/matchups/${gameId}`}
-            className="text-xs text-gray-500 hover:text-orange-400 transition-colors"
+            style={{ fontSize: 11, color: '#8b7d6b', textDecoration: 'none' }}
           >
             Matchup details →
           </Link>

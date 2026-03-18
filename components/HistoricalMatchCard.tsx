@@ -1,6 +1,5 @@
 'use client'
 
-import { cn } from '@/lib/utils'
 import type { HistoricalBracketMatch } from '@/lib/historicalTwins'
 import { GitMerge, Trophy } from 'lucide-react'
 
@@ -10,19 +9,12 @@ interface HistoricalMatchCardProps {
   className?: string
 }
 
-function seedBadgeClass(seed: number): string {
-  if (seed <= 4)  return 'bg-gray-200 text-gray-800'
-  if (seed <= 8)  return 'bg-gray-700 text-gray-200'
-  if (seed <= 12) return 'bg-gray-600 text-gray-300'
-  return 'bg-gray-500 text-gray-300'
-}
-
 function resultColor(result: string): string {
-  if (result === 'Champion')   return 'text-yellow-400'
-  if (result === 'Runner-up')  return 'text-orange-400'
-  if (result === 'F4')         return 'text-blue-400'
-  if (result === 'E8')         return 'text-purple-400'
-  return 'text-gray-400'
+  if (result === 'Champion')  return '#a0832a'
+  if (result === 'Runner-up') return '#b45309'
+  if (result === 'F4')        return '#2563eb'
+  if (result === 'E8')        return '#7c3aed'
+  return '#8b7d6b'
 }
 
 function resultLabel(result: string): string {
@@ -42,63 +34,94 @@ export function HistoricalMatchCard({ match, rank, className }: HistoricalMatchC
   const { candidate: c, similarityScore, explanation } = match
 
   return (
-    <div className={cn(
-      'rounded-xl border border-gray-800 bg-gray-900/60 p-4 hover:border-gray-700 transition-colors',
-      className
-    )}>
+    <div style={{
+      borderRadius: 12,
+      border: '1px solid #e8e0d0',
+      background: '#ffffff',
+      padding: 16,
+      transition: 'border-color 0.15s',
+    }} className={className}>
       {/* Header */}
-      <div className="flex items-start justify-between gap-2 mb-3">
-        <div className="flex items-center gap-2.5">
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {rank && (
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-800 text-xs font-bold text-gray-400">
+            <span style={{
+              display: 'flex',
+              width: 24,
+              height: 24,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50%',
+              background: '#f0e8d0',
+              border: '1px solid #e8e0d0',
+              fontSize: 11,
+              fontWeight: 700,
+              color: '#a0832a',
+              flexShrink: 0,
+            }}>
               {rank}
             </span>
           )}
           <div>
-            <p className="font-semibold text-white text-sm">{c.teamName} <span className="text-gray-500 font-normal">'{String(c.year).slice(2)}</span></p>
-            <p className="text-xs text-gray-500">{c.region} Region · KenPom #{c.kenpomRank}</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#1a1625' }}>
+              {c.teamName}{' '}
+              <span style={{ color: '#8b7d6b', fontWeight: 400 }}>'{String(c.year).slice(2)}</span>
+            </p>
+            <p style={{ fontSize: 11, color: '#8b7d6b' }}>{c.region} Region · KenPom #{c.kenpomRank}</p>
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-1.5 shrink-0">
-          <div className="flex items-center gap-1">
-            <GitMerge className="h-3 w-3 text-orange-400" />
-            <span className="text-xs font-bold text-orange-400">{similarityScore}%</span>
-            <span className="text-xs text-gray-500">match</span>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <GitMerge style={{ width: 12, height: 12, color: '#a0832a' }} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#a0832a' }}>{similarityScore}%</span>
+            <span style={{ fontSize: 11, color: '#8b7d6b' }}>match</span>
           </div>
-          <span className={cn(
-            'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold',
-            seedBadgeClass(c.seed)
-          )}>
+          <span style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            borderRadius: 20,
+            padding: '2px 8px',
+            fontSize: 11,
+            fontWeight: 600,
+            background: '#f0e8d0',
+            color: '#1a1625',
+            border: '1px solid #e8e0d0',
+          }}>
             #{c.seed} seed
           </span>
         </div>
       </div>
 
       {/* Key stats */}
-      <div className="grid grid-cols-3 gap-2 mb-3">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12 }}>
         {[
           { label: 'Adj EM',  value: c.adjEM.toFixed(1) },
           { label: 'Off Eff', value: c.adjOE.toFixed(1) },
           { label: 'Def Eff', value: c.adjDE.toFixed(1) },
         ].map(stat => (
-          <div key={stat.label} className="rounded bg-gray-800/60 p-1.5 text-center">
-            <p className="text-[10px] text-gray-500 uppercase tracking-wide">{stat.label}</p>
-            <p className="text-xs font-semibold text-gray-200">{stat.value}</p>
+          <div key={stat.label} style={{
+            borderRadius: 6,
+            background: '#f5f0e6',
+            padding: '6px 8px',
+            textAlign: 'center',
+          }}>
+            <p style={{ fontSize: 10, color: '#8b7d6b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: '#1a1625' }}>{stat.value}</p>
           </div>
         ))}
       </div>
 
       {/* Tournament result */}
-      <div className="flex items-center gap-1.5 mb-2">
-        <Trophy className="h-3 w-3 text-gray-500" />
-        <span className={cn('text-xs font-semibold', resultColor(c.tournamentResult))}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+        <Trophy style={{ width: 12, height: 12, color: '#8b7d6b' }} />
+        <span style={{ fontSize: 12, fontWeight: 600, color: resultColor(c.tournamentResult) }}>
           {resultLabel(c.tournamentResult)}
         </span>
       </div>
 
       {/* Explanation */}
-      <p className="text-xs text-gray-400 leading-relaxed">{explanation}</p>
+      <p style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.6 }}>{explanation}</p>
     </div>
   )
 }

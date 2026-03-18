@@ -11,9 +11,7 @@ import { HistoricalMatchCard } from '@/components/HistoricalMatchCard'
 import { UpsetAlertBadge } from '@/components/UpsetAlertBadge'
 import { AIExplanationCard } from '@/components/AIExplanationCard'
 import { MatchupCard } from '@/components/MatchupCard'
-import {
-  cn, seedColor, programTierBadge, winProbColor, formatOdds, getVolatilityLabel, getVolatilityColor
-} from '@/lib/utils'
+import { cn, programTierBadge, getVolatilityLabel, getVolatilityColor } from '@/lib/utils'
 import { ArrowLeft, TrendingUp, Shield, Zap, GitMerge, Target } from 'lucide-react'
 import Link from 'next/link'
 import { TeamLogoImg } from '@/components/TeamLogoImg'
@@ -37,7 +35,6 @@ export default function TeamPage({ params }: PageProps) {
   const tierBadge = programTierBadge(team.programTier)
   const s = team.stats
 
-  // First round matchup
   const opponentSeed = R64_PAIRINGS[team.seed]
   const opponent = ALL_TEAMS.find(t =>
     t.region === team.region && t.seed === opponentSeed && !t.isFirstFour
@@ -45,7 +42,6 @@ export default function TeamPage({ params }: PageProps) {
   const prediction = opponent ? predictMatchup(team, opponent) : null
   const upsetRate = opponent ? getUpsetRateForMatchup(team.seed, opponent.seed) : 0
 
-  // AI explanation
   const explanation = prediction && opponent ? generateFallbackExplanation({
     team1: team,
     team2: opponent,
@@ -53,75 +49,122 @@ export default function TeamPage({ params }: PageProps) {
     seedMatchupUpsetRate: upsetRate,
   }) : ''
 
-  // Bracket twins — most similar teams in the 2026 field
   const twins = findHistoricalBracketTwins(team, HISTORICAL_TWIN_CANDIDATES, 3)
 
-  // Path difficulty
   const regionTeams = ALL_TEAMS.filter(t => t.region === team.region && !t.isFirstFour && t.id !== team.id)
   const potentialLaterOpponents = regionTeams.filter(t => t.seed !== opponentSeed).slice(0, 4)
   const pathDifficulty = potentialLaterOpponents.reduce((sum, t) => sum + t.stats.adjEM, 0) / potentialLaterOpponents.length
+
+  const seedAccent = team.seed <= 4 ? '#a0832a' : team.seed <= 8 ? '#2563eb' : '#8b7d6b'
 
   return (
     <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8">
       {/* Back */}
       <Link
         href="/teams"
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-300 mb-6 transition-colors"
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#8b7d6b', textDecoration: 'none', marginBottom: 24 }}
       >
-        <ArrowLeft className="h-3.5 w-3.5" />
+        <ArrowLeft style={{ width: 14, height: 14 }} />
         All Teams
       </Link>
 
       {/* Team header */}
-      <div className="rounded-xl border border-gray-800 bg-gray-900/60 p-6 mb-6">
+      <div style={{
+        borderRadius: 16,
+        border: '1px solid #e8e0d0',
+        background: '#ffffff',
+        padding: 24,
+        marginBottom: 24,
+      }}>
         <div className="flex flex-col sm:flex-row sm:items-start gap-4">
           {/* Logo + seed + name */}
-          <div className="flex items-center gap-4 flex-1">
-            <div className={cn(
-              'shrink-0 flex h-16 w-16 items-center justify-center rounded-xl border-2',
-              team.espnId ? 'bg-white/5' : 'bg-gray-800',
-              team.seed <= 4 ? 'border-yellow-400/40' : team.seed <= 8 ? 'border-blue-400/30' : 'border-gray-700'
-            )}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 1 }}>
+            <div style={{
+              flexShrink: 0,
+              display: 'flex',
+              width: 64,
+              height: 64,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 12,
+              border: `2px solid ${seedAccent}40`,
+              background: team.espnId ? 'transparent' : '#f0e8d0',
+            }}>
               {team.espnId ? (
                 <TeamLogoImg espnId={team.espnId} name={team.name} size={52} fallbackSeed={team.seed} />
               ) : (
-                <span className={cn('text-2xl font-extrabold', seedColor(team.seed))}>{team.seed}</span>
+                <span style={{ fontSize: 24, fontWeight: 800, color: seedAccent }}>{team.seed}</span>
               )}
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-extrabold text-white">{team.name}</h1>
-                <span className={cn(
-                  'inline-flex h-7 w-7 items-center justify-center rounded text-sm font-bold bg-gray-800 border border-gray-700',
-                  seedColor(team.seed)
-                )}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <h1 style={{
+                  fontSize: 28,
+                  fontWeight: 800,
+                  color: '#1a1625',
+                  fontFamily: '"Playfair Display", Georgia, serif',
+                }}>
+                  {team.name}
+                </h1>
+                <span style={{
+                  display: 'inline-flex',
+                  width: 28,
+                  height: 28,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 6,
+                  background: '#f0e8d0',
+                  border: '1px solid #e8e0d0',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: seedAccent,
+                }}>
                   {team.seed}
                 </span>
               </div>
-              <div className="flex flex-wrap items-center gap-2 mt-1">
-                <span className="text-gray-400 text-sm">{team.conference}</span>
-                <span className="text-gray-600">·</span>
-                <span className="text-gray-400 text-sm">{team.region} Region</span>
-                <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium', tierBadge.color)}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                <span style={{ fontSize: 13, color: '#8b7d6b' }}>{team.conference}</span>
+                <span style={{ color: '#e8e0d0' }}>·</span>
+                <span style={{ fontSize: 13, color: '#8b7d6b' }}>{team.region} Region</span>
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  borderRadius: 20,
+                  padding: '2px 8px',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  background: '#f0e8d0',
+                  color: '#a0832a',
+                  border: '1px solid #e8d5a3',
+                }}>
                   {tierBadge.label}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Scores */}
-          <div className="flex gap-4 sm:gap-6">
-            <div className="text-center">
-              <p className="text-xs text-gray-500 mb-1">Title Profile</p>
-              <p className="text-2xl font-bold text-orange-400">{team.titleProfileScore}%</p>
+          {/* Key scores */}
+          <div style={{ display: 'flex', gap: 20 }}>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: 11, color: '#8b7d6b', marginBottom: 4 }}>Title Profile</p>
+              <p style={{ fontSize: 24, fontWeight: 700, color: '#b45309', fontFamily: '"Playfair Display", Georgia, serif' }}>
+                {team.titleProfileScore}%
+              </p>
             </div>
-            <div className="text-center">
-              <p className="text-xs text-gray-500 mb-1">Off Eff</p>
-              <p className="text-2xl font-bold text-blue-400">{s.adjOE.toFixed(1)}</p>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: 11, color: '#8b7d6b', marginBottom: 4 }}>Off Eff</p>
+              <p style={{ fontSize: 24, fontWeight: 700, color: '#2563eb', fontFamily: '"Playfair Display", Georgia, serif' }}>
+                {s.adjOE.toFixed(1)}
+              </p>
             </div>
-            <div className="text-center">
-              <p className="text-xs text-gray-500 mb-1">adjEM</p>
-              <p className={cn('text-2xl font-bold', s.adjEM > 25 ? 'text-emerald-400' : s.adjEM > 15 ? 'text-green-400' : 'text-yellow-400')}>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: 11, color: '#8b7d6b', marginBottom: 4 }}>adjEM</p>
+              <p style={{
+                fontSize: 24,
+                fontWeight: 700,
+                fontFamily: '"Playfair Display", Georgia, serif',
+                color: s.adjEM > 25 ? '#16a34a' : s.adjEM > 15 ? '#15803d' : '#a0832a',
+              }}>
                 {s.adjEM.toFixed(1)}
               </p>
             </div>
@@ -131,26 +174,36 @@ export default function TeamPage({ params }: PageProps) {
         {/* Score bars */}
         <div className="mt-4 grid grid-cols-2 gap-4">
           <div>
-            <div className="flex justify-between text-xs mb-1">
-              <span className="flex items-center gap-1 text-orange-400"><TrendingUp className="h-3 w-3" />Title Match</span>
-              <span className="text-orange-400">{team.titleProfileScore}%</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#b45309' }}>
+                <TrendingUp style={{ width: 12, height: 12 }} />Title Match
+              </span>
+              <span style={{ color: '#b45309', fontWeight: 600 }}>{team.titleProfileScore}%</span>
             </div>
-            <div className="h-2 rounded-full bg-gray-800">
-              <div className="h-2 rounded-full bg-orange-500" style={{ width: `${team.titleProfileScore}%` }} />
+            <div style={{ height: 8, borderRadius: 4, background: '#f0e8d0' }}>
+              <div style={{ height: 8, borderRadius: 4, background: '#b45309', width: `${team.titleProfileScore}%` }} />
             </div>
           </div>
           <div>
-            <div className="flex justify-between text-xs mb-1">
-              <span className={cn('flex items-center gap-1', team.upsetVulnerability > 60 ? 'text-red-400' : 'text-green-400')}>
-                <Shield className="h-3 w-3" />Upset Vuln.
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
+              <span style={{
+                display: 'flex', alignItems: 'center', gap: 4,
+                color: team.upsetVulnerability > 60 ? '#dc2626' : '#16a34a',
+              }}>
+                <Shield style={{ width: 12, height: 12 }} />Upset Vuln.
               </span>
-              <span className={team.upsetVulnerability > 60 ? 'text-red-400' : 'text-green-400'}>{team.upsetVulnerability}%</span>
+              <span style={{
+                fontWeight: 600,
+                color: team.upsetVulnerability > 60 ? '#dc2626' : '#16a34a',
+              }}>
+                {team.upsetVulnerability}%
+              </span>
             </div>
-            <div className="h-2 rounded-full bg-gray-800">
-              <div
-                className={cn('h-2 rounded-full', team.upsetVulnerability > 60 ? 'bg-red-500' : team.upsetVulnerability > 40 ? 'bg-orange-500' : 'bg-green-500')}
-                style={{ width: `${team.upsetVulnerability}%` }}
-              />
+            <div style={{ height: 8, borderRadius: 4, background: '#f0e8d0' }}>
+              <div style={{
+                height: 8, borderRadius: 4, width: `${team.upsetVulnerability}%`,
+                background: team.upsetVulnerability > 60 ? '#dc2626' : team.upsetVulnerability > 40 ? '#f97316' : '#16a34a',
+              }} />
             </div>
           </div>
         </div>
@@ -158,29 +211,50 @@ export default function TeamPage({ params }: PageProps) {
 
       {/* Key Players */}
       {team.keyPlayers && team.keyPlayers.length > 0 && (
-        <section className="mb-8">
-          <h2 className="text-lg font-bold text-white mb-3">Key Players</h2>
+        <section style={{ marginBottom: 32 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1a1625', fontFamily: '"Playfair Display", Georgia, serif', marginBottom: 12 }}>
+            Key Players
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {team.keyPlayers.map(player => (
-              <div key={player.name} className="rounded-xl border border-gray-800 bg-gray-900/60 p-4">
-                <div className="flex items-start justify-between mb-2">
+              <div key={player.name} style={{
+                borderRadius: 12,
+                border: '1px solid #e8e0d0',
+                background: '#ffffff',
+                padding: 16,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
                   <div>
-                    <p className="font-semibold text-white text-sm">{player.name}</p>
-                    <p className="text-xs text-gray-500">{player.year} · {player.position}</p>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#1a1625' }}>{player.name}</p>
+                    <p style={{ fontSize: 11, color: '#8b7d6b' }}>{player.year} · {player.position}</p>
                   </div>
-                  <span className="inline-flex items-center rounded-full bg-gray-800 px-2 py-0.5 text-xs font-bold text-orange-400">
+                  <span style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    borderRadius: 20,
+                    background: '#f0e8d0',
+                    padding: '2px 8px',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: '#a0832a',
+                  }}>
                     {player.position}
                   </span>
                 </div>
-                <div className="grid grid-cols-3 gap-2 mt-3">
+                <div className="grid grid-cols-3 gap-2" style={{ marginTop: 12 }}>
                   {[
                     { label: 'PPG', value: player.ppg.toFixed(1) },
                     { label: 'RPG', value: player.rpg.toFixed(1) },
                     { label: 'APG', value: player.apg.toFixed(1) },
                   ].map(stat => (
-                    <div key={stat.label} className="rounded bg-gray-800/60 p-1.5 text-center">
-                      <p className="text-[10px] text-gray-500 uppercase tracking-wide">{stat.label}</p>
-                      <p className="text-sm font-semibold text-gray-200">{stat.value}</p>
+                    <div key={stat.label} style={{
+                      borderRadius: 6,
+                      background: '#f5f0e6',
+                      padding: '6px 4px',
+                      textAlign: 'center',
+                    }}>
+                      <p style={{ fontSize: 10, color: '#8b7d6b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</p>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: '#1a1625' }}>{stat.value}</p>
                     </div>
                   ))}
                 </div>
@@ -191,15 +265,21 @@ export default function TeamPage({ params }: PageProps) {
       )}
 
       {/* Full stat grid */}
-      <section className="mb-8">
-        <h2 className="text-lg font-bold text-white mb-3">Season Statistics</h2>
-        <p className="text-xs text-gray-500 mb-3">adjOE, adjDE, adjEM and shooting stats are real 2025–26 data from Barttorvik/T-Rank. Run <code className="text-orange-400/80">npm run data:espn</code> to refresh tempo and rebound stats from ESPN.</p>
+      <section style={{ marginBottom: 32 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1a1625', fontFamily: '"Playfair Display", Georgia, serif', marginBottom: 8 }}>
+          Season Statistics
+        </h2>
+        <p style={{ fontSize: 12, color: '#8b7d6b', marginBottom: 12 }}>
+          adjOE, adjDE, adjEM and shooting stats are real 2025–26 data from Barttorvik/T-Rank.
+        </p>
         <TeamStatGrid team={team} />
       </section>
 
       {/* Season record */}
-      <section className="mb-8">
-        <h2 className="text-lg font-bold text-white mb-3">Season Record</h2>
+      <section style={{ marginBottom: 32 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1a1625', fontFamily: '"Playfair Display", Georgia, serif', marginBottom: 12 }}>
+          Season Record
+        </h2>
         {(() => {
           const w = team.winsTotal ?? 0
           const l = team.lossesTotal ?? 0
@@ -208,28 +288,41 @@ export default function TeamPage({ params }: PageProps) {
           const hasRecord = g > 0
           return (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="rounded-lg border border-gray-800 bg-gray-900/50 p-3 text-center">
-                <p className="text-xs text-gray-500 mb-1">Season Record</p>
-                <p className={cn('text-xl font-bold', hasRecord ? (winPct > 0.7 ? 'text-emerald-400' : 'text-yellow-400') : 'text-gray-500')}>
-                  {hasRecord ? `${w}-${l}` : '—'}
-                </p>
-              </div>
-              <div className="rounded-lg border border-gray-800 bg-gray-900/50 p-3 text-center">
-                <p className="text-xs text-gray-500 mb-1">Win %</p>
-                <p className={cn('text-xl font-bold', winPct > 0.75 ? 'text-emerald-400' : winPct > 0.6 ? 'text-yellow-400' : 'text-red-400')}>
-                  {hasRecord ? `${Math.round(winPct * 100)}%` : '—'}
-                </p>
-              </div>
-              <div className="rounded-lg border border-gray-800 bg-gray-900/50 p-3 text-center">
-                <p className="text-xs text-gray-500 mb-1">Games Played</p>
-                <p className="text-xl font-bold text-gray-300">{hasRecord ? g : '—'}</p>
-              </div>
-              <div className="rounded-lg border border-gray-800 bg-gray-900/50 p-3 text-center">
-                <p className="text-xs text-gray-500 mb-1">Luck Factor</p>
-                <p className={cn('text-xl font-bold', team.stats.luckFactor > 0.03 ? 'text-emerald-400' : team.stats.luckFactor < -0.03 ? 'text-red-400' : 'text-yellow-400')}>
-                  {team.stats.luckFactor > 0 ? '+' : ''}{(team.stats.luckFactor * 100).toFixed(1)}
-                </p>
-              </div>
+              {[
+                {
+                  label: 'Season Record',
+                  value: hasRecord ? `${w}-${l}` : '—',
+                  color: hasRecord ? (winPct > 0.7 ? '#16a34a' : '#a0832a') : '#8b7d6b',
+                },
+                {
+                  label: 'Win %',
+                  value: hasRecord ? `${Math.round(winPct * 100)}%` : '—',
+                  color: winPct > 0.75 ? '#16a34a' : winPct > 0.6 ? '#a0832a' : '#dc2626',
+                },
+                {
+                  label: 'Games Played',
+                  value: hasRecord ? g : '—',
+                  color: '#1a1625',
+                },
+                {
+                  label: 'Luck Factor',
+                  value: team.stats.luckFactor > 0 ? `+${team.stats.luckFactor.toFixed(3)}` : team.stats.luckFactor.toFixed(3),
+                  color: team.stats.luckFactor > 0.03 ? '#b45309' : team.stats.luckFactor < -0.03 ? '#16a34a' : '#a0832a',
+                },
+              ].map(stat => (
+                <div key={stat.label} style={{
+                  borderRadius: 8,
+                  border: '1px solid #e8e0d0',
+                  background: '#ffffff',
+                  padding: 12,
+                  textAlign: 'center',
+                }}>
+                  <p style={{ fontSize: 11, color: '#8b7d6b', marginBottom: 4 }}>{stat.label}</p>
+                  <p style={{ fontSize: 22, fontWeight: 700, color: stat.color, fontFamily: '"Playfair Display", Georgia, serif' }}>
+                    {stat.value}
+                  </p>
+                </div>
+              ))}
             </div>
           )
         })()}
@@ -237,12 +330,14 @@ export default function TeamPage({ params }: PageProps) {
 
       {/* First round matchup */}
       {prediction && opponent && (
-        <section className="mb-8">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold text-white">First Round Matchup</h2>
+        <section style={{ marginBottom: 32 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1a1625', fontFamily: '"Playfair Display", Georgia, serif' }}>
+              First Round Matchup
+            </h2>
             <Link
               href={`/matchups/r64_${team.region}_${Math.min(team.seed, opponent.seed)}v${Math.max(team.seed, opponent.seed)}`}
-              className="text-sm text-orange-400 hover:text-orange-300"
+              style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none' }}
             >
               Full analysis →
             </Link>
@@ -257,28 +352,50 @@ export default function TeamPage({ params }: PageProps) {
               round={1}
             />
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between rounded-lg border border-gray-800 bg-gray-900/50 px-4 py-2.5">
-                <span className="text-sm text-gray-400">Confidence</span>
-                <span className={cn('text-sm font-semibold', prediction.confidenceTier === 'coin_flip' ? 'text-orange-400' : prediction.confidenceTier === 'clear_favorite' ? 'text-emerald-400' : 'text-blue-400')}>
-                  {prediction.confidenceTier.replace('_', ' ')}
-                </span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg border border-gray-800 bg-gray-900/50 px-4 py-2.5">
-                <span className="text-sm text-gray-400">Volatility</span>
-                <span className={cn('text-sm font-semibold', getVolatilityColor(prediction.volatilityScore))}>
-                  {getVolatilityLabel(prediction.volatilityScore)} ({prediction.volatilityScore}/100)
-                </span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg border border-gray-800 bg-gray-900/50 px-4 py-2.5">
-                <span className="text-sm text-gray-400">Seed upset rate</span>
-                <span className="text-sm font-semibold text-gray-300">
-                  {Math.round(upsetRate * 100)}%
-                </span>
-              </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+                {
+                  label: 'Confidence',
+                  value: prediction.confidenceTier.replace('_', ' '),
+                  color: prediction.confidenceTier === 'coin_flip' ? '#b45309' : prediction.confidenceTier === 'clear_favorite' ? '#16a34a' : '#2563eb',
+                },
+                {
+                  label: 'Volatility',
+                  value: `${getVolatilityLabel(prediction.volatilityScore)} (${prediction.volatilityScore}/100)`,
+                  color: prediction.volatilityScore > 60 ? '#dc2626' : prediction.volatilityScore > 40 ? '#b45309' : '#16a34a',
+                },
+                {
+                  label: 'Seed upset rate',
+                  value: `${Math.round(upsetRate * 100)}%`,
+                  color: '#4a4560',
+                },
+              ].map(item => (
+                <div key={item.label} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  borderRadius: 8,
+                  border: '1px solid #e8e0d0',
+                  background: '#ffffff',
+                  padding: '10px 16px',
+                }}>
+                  <span style={{ fontSize: 13, color: '#4a4560' }}>{item.label}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: item.color, textTransform: 'capitalize' }}>
+                    {item.value}
+                  </span>
+                </div>
+              ))}
               {prediction.upsetAlertTier !== 'none' && (
-                <div className="flex items-center justify-between rounded-lg border border-gray-800 bg-gray-900/50 px-4 py-2.5">
-                  <span className="text-sm text-gray-400">Upset alert</span>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  borderRadius: 8,
+                  border: '1px solid #fca5a5',
+                  background: '#fef2f2',
+                  padding: '10px 16px',
+                }}>
+                  <span style={{ fontSize: 13, color: '#4a4560' }}>Upset alert</span>
                   <UpsetAlertBadge tier={prediction.upsetAlertTier} />
                 </div>
               )}
@@ -289,8 +406,10 @@ export default function TeamPage({ params }: PageProps) {
 
       {/* AI explanation */}
       {explanation && opponent && (
-        <section className="mb-8">
-          <h2 className="text-lg font-bold text-white mb-3">Matchup Analysis</h2>
+        <section style={{ marginBottom: 32 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1a1625', fontFamily: '"Playfair Display", Georgia, serif', marginBottom: 12 }}>
+            Matchup Analysis
+          </h2>
           <AIExplanationCard
             gameId={`r64_${team.region}_${Math.min(team.seed, opponent?.seed ?? 0)}v${Math.max(team.seed, opponent?.seed ?? 0)}`}
             initialExplanation={explanation}
@@ -300,11 +419,13 @@ export default function TeamPage({ params }: PageProps) {
       )}
 
       {/* Bracket twins */}
-      <section className="mb-8">
-        <div className="flex items-center gap-2 mb-3">
-          <GitMerge className="h-5 w-5 text-orange-400" />
-          <h2 className="text-lg font-bold text-white">Historical Twins</h2>
-          <span className="text-xs text-gray-500">Most statistically similar past tournament teams</span>
+      <section style={{ marginBottom: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <GitMerge style={{ width: 18, height: 18, color: '#a0832a' }} />
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1a1625', fontFamily: '"Playfair Display", Georgia, serif' }}>
+            Historical Twins
+          </h2>
+          <span style={{ fontSize: 12, color: '#8b7d6b' }}>Most statistically similar past tournament teams</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {twins.map((match, i) => (
@@ -314,29 +435,48 @@ export default function TeamPage({ params }: PageProps) {
       </section>
 
       {/* Path difficulty */}
-      <section className="mb-8">
-        <div className="flex items-center gap-2 mb-3">
-          <Target className="h-5 w-5 text-blue-400" />
-          <h2 className="text-lg font-bold text-white">Path Difficulty</h2>
+      <section style={{ marginBottom: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <Target style={{ width: 18, height: 18, color: '#2563eb' }} />
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1a1625', fontFamily: '"Playfair Display", Georgia, serif' }}>
+            Path Difficulty
+          </h2>
         </div>
-        <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-5">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-gray-400">Average potential opponent adjEM</span>
-            <span className={cn('text-lg font-bold', pathDifficulty > 22 ? 'text-red-400' : pathDifficulty > 16 ? 'text-orange-400' : 'text-yellow-400')}>
+        <div style={{
+          borderRadius: 12,
+          border: '1px solid #e8e0d0',
+          background: '#ffffff',
+          padding: 20,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span style={{ fontSize: 13, color: '#4a4560' }}>Average potential opponent adjEM</span>
+            <span style={{
+              fontSize: 20,
+              fontWeight: 700,
+              fontFamily: '"Playfair Display", Georgia, serif',
+              color: pathDifficulty > 22 ? '#dc2626' : pathDifficulty > 16 ? '#b45309' : '#a0832a',
+            }}>
               {pathDifficulty.toFixed(1)}
             </span>
           </div>
-          <div className="h-2 rounded-full bg-gray-800 mb-3">
-            <div
-              className={cn('h-2 rounded-full', pathDifficulty > 22 ? 'bg-red-500' : pathDifficulty > 16 ? 'bg-orange-500' : 'bg-yellow-500')}
-              style={{ width: `${Math.min(100, (pathDifficulty / 35) * 100)}%` }}
-            />
+          <div style={{ height: 8, borderRadius: 4, background: '#f0e8d0', marginBottom: 12 }}>
+            <div style={{
+              height: 8,
+              borderRadius: 4,
+              width: `${Math.min(100, (pathDifficulty / 35) * 100)}%`,
+              background: pathDifficulty > 22 ? '#dc2626' : pathDifficulty > 16 ? '#b45309' : '#a0832a',
+            }} />
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {potentialLaterOpponents.slice(0, 4).map(opp => (
-              <div key={opp.id} className="rounded bg-gray-800/60 p-2 text-center">
-                <p className="text-xs text-gray-500">#{opp.seed} {opp.name}</p>
-                <p className="text-sm font-semibold text-gray-300">{opp.stats.adjEM.toFixed(1)} EM</p>
+              <div key={opp.id} style={{
+                borderRadius: 6,
+                background: '#f5f0e6',
+                padding: '8px 6px',
+                textAlign: 'center',
+              }}>
+                <p style={{ fontSize: 11, color: '#8b7d6b' }}>#{opp.seed} {opp.name}</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#1a1625' }}>{opp.stats.adjEM.toFixed(1)} EM</p>
               </div>
             ))}
           </div>

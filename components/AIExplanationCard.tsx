@@ -35,24 +35,39 @@ export function AIExplanationCard({ gameId, initialExplanation, source = 'fallba
   }
 
   return (
-    <div className={cn('rounded-xl border border-gray-800 bg-gray-900/50 overflow-hidden', className)}>
+    <div style={{
+      borderRadius: 12,
+      border: '1px solid #e8e0d0',
+      background: '#ffffff',
+      overflow: 'hidden',
+    }} className={className}>
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-800 bg-gray-900/80">
-        <div className="flex items-center gap-2">
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '12px 20px',
+        borderBottom: '1px solid #e8e0d0',
+        background: '#fdfcf8',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {currentSource === 'ai' ? (
-            <Sparkles className="h-4 w-4 text-orange-400" />
+            <Sparkles style={{ width: 16, height: 16, color: '#a0832a' }} />
           ) : (
-            <Cpu className="h-4 w-4 text-blue-400" />
+            <Cpu style={{ width: 16, height: 16, color: '#2563eb' }} />
           )}
-          <span className="text-sm font-semibold text-gray-200">
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1625' }}>
             {currentSource === 'ai' ? 'AI Analysis' : 'Statistical Analysis'}
           </span>
-          <span className={cn(
-            'text-xs px-2 py-0.5 rounded-full border',
-            currentSource === 'ai'
-              ? 'text-orange-400 bg-orange-400/10 border-orange-400/30'
-              : 'text-blue-400 bg-blue-400/10 border-blue-400/30'
-          )}>
+          <span style={{
+            fontSize: 11,
+            padding: '2px 8px',
+            borderRadius: 20,
+            border: '1px solid',
+            borderColor: currentSource === 'ai' ? '#e8d5a3' : '#bfdbfe',
+            color: currentSource === 'ai' ? '#a0832a' : '#2563eb',
+            background: currentSource === 'ai' ? '#fdf8ed' : '#eff6ff',
+          }}>
             {currentSource === 'ai' ? 'LLM' : 'Deterministic'}
           </span>
         </div>
@@ -60,38 +75,55 @@ export function AIExplanationCard({ gameId, initialExplanation, source = 'fallba
         <button
           onClick={handleRefresh}
           disabled={isPending}
-          className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors disabled:opacity-50"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            fontSize: 12,
+            color: '#8b7d6b',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            opacity: isPending ? 0.5 : 1,
+          }}
         >
-          <RefreshCw className={cn('h-3.5 w-3.5', isPending && 'animate-spin')} />
+          <RefreshCw style={{ width: 14, height: 14, animation: isPending ? 'spin 1s linear infinite' : 'none' }} />
           Regenerate
         </button>
       </div>
 
       {/* Content */}
-      <div className="p-5">
+      <div style={{ padding: 20 }}>
         {isPending ? (
-          <div className="space-y-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-5/6" />
-            <Skeleton className="h-4 w-full mt-3" />
+            <Skeleton className="h-4 w-full mt-2" />
             <Skeleton className="h-4 w-4/5" />
           </div>
         ) : explanation ? (
-          <div className="prose prose-sm prose-invert max-w-none">
+          <div>
             {explanation.split('\n\n').map((para, i) => (
-              <p key={i} className="text-gray-300 leading-relaxed text-sm mb-3 last:mb-0">
+              <p key={i} style={{ fontSize: 14, color: '#4a4560', lineHeight: 1.7, marginBottom: 12 }}>
                 {para}
               </p>
             ))}
           </div>
         ) : (
-          <div className="text-center py-8">
-            <Bot className="h-8 w-8 text-gray-600 mx-auto mb-3" />
-            <p className="text-sm text-gray-500">No explanation available yet.</p>
+          <div style={{ textAlign: 'center', padding: '32px 0' }}>
+            <Bot style={{ width: 32, height: 32, color: '#e8e0d0', margin: '0 auto 12px' }} />
+            <p style={{ fontSize: 14, color: '#8b7d6b' }}>No explanation available yet.</p>
             <button
               onClick={handleRefresh}
-              className="mt-3 text-xs text-orange-400 hover:text-orange-300"
+              style={{
+                marginTop: 12,
+                fontSize: 12,
+                color: '#2563eb',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+              }}
             >
               Generate analysis
             </button>
@@ -99,7 +131,13 @@ export function AIExplanationCard({ gameId, initialExplanation, source = 'fallba
         )}
 
         {currentSource === 'fallback' && !isPending && (
-          <p className="mt-4 text-xs text-gray-600 border-t border-gray-800 pt-3">
+          <p style={{
+            marginTop: 16,
+            fontSize: 11,
+            color: '#8b7d6b',
+            borderTop: '1px solid #e8e0d0',
+            paddingTop: 12,
+          }}>
             This analysis uses deterministic rules from the prediction engine.{' '}
             Set AI_PROVIDER and AI_API_KEY in your .env to enable LLM explanations.
           </p>

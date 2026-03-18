@@ -6,6 +6,24 @@ import { ArrowLeftRight, TrendingUp, Shield, Zap, ChevronDown, Trophy } from 'lu
 import { predictMatchup } from '@/lib/predictionEngine'
 import type { MockTeam } from '@/lib/mockData'
 
+// ─── Design tokens ────────────────────────────────────────────────────────────
+
+const T = {
+  parchment: '#f5f0e6',
+  navy:      '#1a1625',
+  navyMuted: '#4a4560',
+  gold:      '#a0832a',
+  goldLight: '#c4a84a',
+  goldSubtle:'#f0e8d0',
+  border:    '#e8e0d0',
+  blue:      '#2563eb',
+  blueMuted: '#3b82f6',
+  amber:     '#b45309',
+  amberMuted:'#d97706',
+  white:     '#ffffff',
+  muted:     '#8b7d6b',
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function pct(n: number) {
@@ -16,8 +34,19 @@ function TeamLogo({ team, size = 40 }: { team: MockTeam; size?: number }) {
   if (!team.espnId) {
     return (
       <div
-        className="flex items-center justify-center rounded-lg font-bold text-lg bg-gray-800 border border-gray-700 text-gray-300"
-        style={{ width: size, height: size }}
+        style={{
+          width: size,
+          height: size,
+          background: T.goldSubtle,
+          border: `1px solid ${T.border}`,
+          borderRadius: 8,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontWeight: 700,
+          fontSize: size * 0.4,
+          color: T.navy,
+        }}
       >
         {team.seed}
       </div>
@@ -47,16 +76,12 @@ function StatBar({
   v2,
   higherIsBetter = true,
   format = (n: number) => n.toFixed(1),
-  accent1 = 'bg-blue-500',
-  accent2 = 'bg-orange-500',
 }: {
   label: string
   v1: number
   v2: number
   higherIsBetter?: boolean
   format?: (n: number) => string
-  accent1?: string
-  accent2?: string
 }) {
   const max = Math.max(Math.abs(v1), Math.abs(v2), 1)
   const bar1 = Math.min(100, (Math.abs(v1) / max) * 100)
@@ -66,32 +91,79 @@ function StatBar({
   const t2Wins = higherIsBetter ? v2 > v1 : v2 < v1
 
   return (
-    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 py-2 border-b border-gray-800/40">
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr auto 1fr',
+        alignItems: 'center',
+        gap: '12px',
+        padding: '8px 0',
+        borderBottom: `1px solid ${T.border}`,
+      }}
+    >
       {/* Team 1 bar (right-aligned) */}
-      <div className="flex items-center justify-end gap-2">
-        <span className={`text-sm tabular-nums font-semibold ${t1Wins ? 'text-white' : 'text-gray-500'}`}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+        <span style={{
+          fontSize: 13,
+          fontVariantNumeric: 'tabular-nums',
+          fontWeight: 600,
+          color: t1Wins ? T.navy : T.muted,
+        }}>
           {format(v1)}
         </span>
-        <div className="w-24 h-2 rounded-full bg-gray-800 overflow-hidden flex justify-end">
-          <div
-            className={`h-2 rounded-full ${t1Wins ? accent1 : 'bg-gray-700'}`}
-            style={{ width: `${bar1}%` }}
-          />
+        <div style={{
+          width: 96,
+          height: 8,
+          borderRadius: 4,
+          background: T.goldSubtle,
+          overflow: 'hidden',
+          display: 'flex',
+          justifyContent: 'flex-end',
+        }}>
+          <div style={{
+            height: 8,
+            borderRadius: 4,
+            background: t1Wins ? T.blue : T.border,
+            width: `${bar1}%`,
+          }} />
         </div>
       </div>
 
       {/* Label */}
-      <span className="text-xs text-gray-500 text-center w-24 shrink-0">{label}</span>
+      <span style={{
+        fontSize: 11,
+        color: T.muted,
+        textAlign: 'center',
+        width: 96,
+        flexShrink: 0,
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+      }}>
+        {label}
+      </span>
 
       {/* Team 2 bar (left-aligned) */}
-      <div className="flex items-center gap-2">
-        <div className="w-24 h-2 rounded-full bg-gray-800 overflow-hidden">
-          <div
-            className={`h-2 rounded-full ${t2Wins ? accent2 : 'bg-gray-700'}`}
-            style={{ width: `${bar2}%` }}
-          />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{
+          width: 96,
+          height: 8,
+          borderRadius: 4,
+          background: T.goldSubtle,
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            height: 8,
+            borderRadius: 4,
+            background: t2Wins ? T.amber : T.border,
+            width: `${bar2}%`,
+          }} />
         </div>
-        <span className={`text-sm tabular-nums font-semibold ${t2Wins ? 'text-white' : 'text-gray-500'}`}>
+        <span style={{
+          fontSize: 13,
+          fontVariantNumeric: 'tabular-nums',
+          fontWeight: 600,
+          color: t2Wins ? T.navy : T.muted,
+        }}>
           {format(v2)}
         </span>
       </div>
@@ -99,7 +171,7 @@ function StatBar({
   )
 }
 
-// ─── Win probability arc ──────────────────────────────────────────────────────
+// ─── Win probability bar ──────────────────────────────────────────────────────
 
 function WinProbBar({
   team1,
@@ -114,64 +186,102 @@ function WinProbBar({
   const p2 = 100 - p1
 
   const tier =
-    p1 >= 80 ? 'dominant' :
-    p1 >= 65 ? 'favored' :
-    p1 >= 55 ? 'slight edge' :
-    p1 >= 45 ? 'toss-up' :
-    p1 >= 35 ? 'slight edge' :
-    p1 >= 20 ? 'favored' : 'dominant'
+    p1 >= 80 ? 'Dominant favorite' :
+    p1 >= 65 ? 'Clear favorite' :
+    p1 >= 55 ? 'Slight edge' :
+    p1 >= 45 ? 'Toss-up' :
+    p1 >= 35 ? 'Slight edge' :
+    p1 >= 20 ? 'Clear favorite' : 'Dominant favorite'
 
   return (
-    <div className="rounded-2xl border border-gray-800 bg-gray-900/70 p-6 text-center">
-      <div className="text-xs uppercase tracking-widest text-gray-500 mb-4">Win Probability</div>
+    <div style={{
+      borderRadius: 16,
+      border: `1px solid ${T.border}`,
+      background: T.white,
+      padding: '24px',
+      textAlign: 'center',
+    }}>
+      <div style={{
+        fontSize: 11,
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em',
+        color: T.gold,
+        fontWeight: 600,
+        marginBottom: 20,
+      }}>
+        Win Probability
+      </div>
 
       {/* Teams */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="text-center flex-1">
-          <div className="flex justify-center mb-2">
-            <TeamLogo team={team1} size={48} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+        <div style={{ textAlign: 'center', flex: 1 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+            <TeamLogo team={team1} size={52} />
           </div>
-          <div className="text-sm font-bold text-gray-200">{team1.abbreviation ?? team1.name}</div>
-          <div className="text-3xl font-black text-blue-400 mt-1">{p1}%</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: T.navy }}>{team1.abbreviation ?? team1.name}</div>
+          <div style={{
+            fontSize: 36,
+            fontWeight: 900,
+            color: T.blue,
+            fontFamily: '"Playfair Display", Georgia, serif',
+            marginTop: 4,
+          }}>
+            {p1}%
+          </div>
         </div>
 
-        <div className="text-center px-4">
-          <div className="text-xl font-black text-gray-600">vs</div>
-          <div className="text-xs text-gray-600 mt-1">{tier}</div>
+        <div style={{ textAlign: 'center', padding: '0 16px' }}>
+          <div style={{ fontSize: 18, fontWeight: 900, color: T.border }}>vs</div>
+          <div style={{ fontSize: 11, color: T.muted, marginTop: 4, fontStyle: 'italic' }}>{tier}</div>
         </div>
 
-        <div className="text-center flex-1">
-          <div className="flex justify-center mb-2">
-            <TeamLogo team={team2} size={48} />
+        <div style={{ textAlign: 'center', flex: 1 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+            <TeamLogo team={team2} size={52} />
           </div>
-          <div className="text-sm font-bold text-gray-200">{team2.abbreviation ?? team2.name}</div>
-          <div className="text-3xl font-black text-orange-400 mt-1">{p2}%</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: T.navy }}>{team2.abbreviation ?? team2.name}</div>
+          <div style={{
+            fontSize: 36,
+            fontWeight: 900,
+            color: T.amber,
+            fontFamily: '"Playfair Display", Georgia, serif',
+            marginTop: 4,
+          }}>
+            {p2}%
+          </div>
         </div>
       </div>
 
       {/* Bar */}
-      <div className="h-4 rounded-full overflow-hidden flex">
+      <div style={{ height: 12, borderRadius: 6, overflow: 'hidden', display: 'flex' }}>
         <div
-          className="h-4 bg-blue-500 transition-all duration-500"
-          style={{ width: `${p1}%` }}
+          style={{
+            height: 12,
+            background: T.blue,
+            transition: 'width 0.5s ease',
+            width: `${p1}%`,
+          }}
         />
         <div
-          className="h-4 bg-orange-500 transition-all duration-500"
-          style={{ width: `${p2}%` }}
+          style={{
+            height: 12,
+            background: T.amber,
+            transition: 'width 0.5s ease',
+            width: `${p2}%`,
+          }}
         />
       </div>
 
       {/* Favorite label */}
       {p1 !== 50 && (
-        <p className="mt-3 text-xs text-gray-500">
-          <span className={p1 > 50 ? 'text-blue-400 font-semibold' : 'text-orange-400 font-semibold'}>
+        <p style={{ marginTop: 12, fontSize: 12, color: T.muted }}>
+          <span style={{ color: p1 > 50 ? T.blue : T.amber, fontWeight: 600 }}>
             {p1 > 50 ? team1.name : team2.name}
           </span>
           {' '}projected to win
           {(() => {
             const emDiff = Math.abs(team1.stats.adjEM - team2.stats.adjEM)
             const avgTempo = (team1.stats.tempo + team2.stats.tempo) / 2
-            // ~0.45 pts per adjEM point, scaled by tempo (baseline 68 possessions)
             const spread = Math.round(emDiff * 0.45 * (avgTempo / 68) * 10) / 10
             return spread > 0.5 ? ` · by ${spread} pts` : ''
           })()}
@@ -193,16 +303,30 @@ function FactorsPanel({
   team2: MockTeam
 }) {
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900/60 p-5">
-      <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-        <Zap className="h-4 w-4 text-orange-400" />
-        Matchup Deciding Factors
+    <div style={{
+      borderRadius: 12,
+      border: `1px solid ${T.border}`,
+      background: T.white,
+      padding: 20,
+    }}>
+      <h3 style={{
+        fontSize: 13,
+        fontWeight: 700,
+        color: T.navy,
+        marginBottom: 16,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        fontFamily: '"Playfair Display", Georgia, serif',
+      }}>
+        <Zap style={{ width: 16, height: 16, color: T.gold }} />
+        Matchup Factors
       </h3>
 
-      <div className="space-y-2 mb-5">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
         {prediction.decidingFactors.map((factor, i) => (
-          <div key={i} className="flex items-start gap-2 text-sm text-gray-400">
-            <span className="text-orange-400 mt-0.5 shrink-0">→</span>
+          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, color: T.navyMuted }}>
+            <span style={{ color: T.gold, flexShrink: 0, marginTop: 2 }}>→</span>
             {factor}
           </div>
         ))}
@@ -210,15 +334,25 @@ function FactorsPanel({
 
       {prediction.layer2Adjustments.length > 0 && (
         <>
-          <div className="text-xs uppercase tracking-wider text-gray-600 mb-2">Style Adjustments</div>
-          <div className="space-y-1.5">
+          <div style={{
+            fontSize: 10,
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            color: T.muted,
+            marginBottom: 8,
+          }}>
+            Style Adjustments
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {prediction.layer2Adjustments.slice(0, 4).map((adj, i) => {
-              const favoring = adj.favoringTeam === team1.id ? team1.abbreviation ?? team1.name : team2.abbreviation ?? team2.name
-              const color = adj.favoringTeam === team1.id ? 'text-blue-400' : 'text-orange-400'
+              const favoring = adj.favoringTeam === team1.id
+                ? team1.abbreviation ?? team1.name
+                : team2.abbreviation ?? team2.name
+              const color = adj.favoringTeam === team1.id ? T.blue : T.amber
               return (
-                <div key={i} className="flex items-center justify-between text-xs">
-                  <span className="text-gray-500">{adj.label}</span>
-                  <span className={`font-semibold ${color}`}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
+                  <span style={{ color: T.muted }}>{adj.label}</span>
+                  <span style={{ fontWeight: 600, color }}>
                     +{adj.magnitude.toFixed(1)} {favoring}
                   </span>
                 </div>
@@ -229,7 +363,15 @@ function FactorsPanel({
       )}
 
       {prediction.upsetAlertTier !== 'none' && (
-        <div className="mt-4 rounded-lg border border-red-900/40 bg-red-950/20 px-3 py-2 text-xs text-red-400">
+        <div style={{
+          marginTop: 16,
+          borderRadius: 8,
+          border: `1px solid #fca5a5`,
+          background: '#fef2f2',
+          padding: '8px 12px',
+          fontSize: 12,
+          color: '#dc2626',
+        }}>
           ⚠️ {prediction.upsetAlertReasons[0]}
         </div>
       )}
@@ -248,41 +390,68 @@ function PlayersPanel({ team1, team2 }: { team1: MockTeam; team2: MockTeam }) {
   const maxRows = Math.max(p1.length, p2.length, 1)
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900/60 p-5">
-      <h3 className="text-sm font-bold text-white mb-4">Key Players</h3>
-      <div className="grid grid-cols-2 gap-4">
+    <div style={{
+      borderRadius: 12,
+      border: `1px solid ${T.border}`,
+      background: T.white,
+      padding: 20,
+    }}>
+      <h3 style={{
+        fontSize: 13,
+        fontWeight: 700,
+        color: T.navy,
+        marginBottom: 16,
+        fontFamily: '"Playfair Display", Georgia, serif',
+      }}>
+        Key Players
+      </h3>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         {/* Team 1 */}
-        <div className="space-y-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {p1.slice(0, maxRows).map(p => (
-            <div key={p.name} className="rounded-lg border border-gray-800 bg-gray-800/40 px-3 py-2">
-              <div className="text-xs font-semibold text-gray-200">{p.name}</div>
-              {p.position && <div className="text-[10px] text-gray-600 mb-1">{p.position}</div>}
-              <div className="flex gap-2 text-[11px] tabular-nums">
-                <span className="text-orange-400 font-bold">{p.ppg.toFixed(1)} ppg</span>
-                {p.rpg != null && p.rpg > 0 && <span className="text-blue-400">{p.rpg.toFixed(1)} rpg</span>}
-                {p.apg != null && p.apg > 0 && <span className="text-purple-400">{p.apg.toFixed(1)} apg</span>}
+            <div key={p.name} style={{
+              borderRadius: 8,
+              border: `1px solid ${T.border}`,
+              background: T.parchment,
+              padding: '8px 12px',
+            }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: T.navy }}>{p.name}</div>
+              {p.position && <div style={{ fontSize: 10, color: T.muted, marginBottom: 4 }}>{p.position}</div>}
+              <div style={{ display: 'flex', gap: 8, fontSize: 11, fontVariantNumeric: 'tabular-nums' }}>
+                <span style={{ color: T.blue, fontWeight: 700 }}>{p.ppg.toFixed(1)} ppg</span>
+                {p.rpg != null && p.rpg > 0 && <span style={{ color: T.gold }}>{p.rpg.toFixed(1)} rpg</span>}
+                {p.apg != null && p.apg > 0 && <span style={{ color: T.amber }}>{p.apg.toFixed(1)} apg</span>}
               </div>
             </div>
           ))}
           {p1.length === 0 && (
-            <div className="text-xs text-gray-600 italic py-2">No player data for {team1.name}</div>
+            <div style={{ fontSize: 12, color: T.muted, fontStyle: 'italic', padding: '8px 0' }}>
+              No player data for {team1.name}
+            </div>
           )}
         </div>
         {/* Team 2 */}
-        <div className="space-y-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {p2.slice(0, maxRows).map(p => (
-            <div key={p.name} className="rounded-lg border border-gray-800 bg-gray-800/40 px-3 py-2">
-              <div className="text-xs font-semibold text-gray-200">{p.name}</div>
-              {p.position && <div className="text-[10px] text-gray-600 mb-1">{p.position}</div>}
-              <div className="flex gap-2 text-[11px] tabular-nums">
-                <span className="text-orange-400 font-bold">{p.ppg.toFixed(1)} ppg</span>
-                {p.rpg != null && p.rpg > 0 && <span className="text-blue-400">{p.rpg.toFixed(1)} rpg</span>}
-                {p.apg != null && p.apg > 0 && <span className="text-purple-400">{p.apg.toFixed(1)} apg</span>}
+            <div key={p.name} style={{
+              borderRadius: 8,
+              border: `1px solid ${T.border}`,
+              background: T.parchment,
+              padding: '8px 12px',
+            }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: T.navy }}>{p.name}</div>
+              {p.position && <div style={{ fontSize: 10, color: T.muted, marginBottom: 4 }}>{p.position}</div>}
+              <div style={{ display: 'flex', gap: 8, fontSize: 11, fontVariantNumeric: 'tabular-nums' }}>
+                <span style={{ color: T.blue, fontWeight: 700 }}>{p.ppg.toFixed(1)} ppg</span>
+                {p.rpg != null && p.rpg > 0 && <span style={{ color: T.gold }}>{p.rpg.toFixed(1)} rpg</span>}
+                {p.apg != null && p.apg > 0 && <span style={{ color: T.amber }}>{p.apg.toFixed(1)} apg</span>}
               </div>
             </div>
           ))}
           {p2.length === 0 && (
-            <div className="text-xs text-gray-600 italic py-2">No player data for {team2.name}</div>
+            <div style={{ fontSize: 12, color: T.muted, fontStyle: 'italic', padding: '8px 0' }}>
+              No player data for {team2.name}
+            </div>
           )}
         </div>
       </div>
@@ -297,13 +466,13 @@ function TeamSelector({
   value,
   onChange,
   label,
-  accent,
+  accentColor,
 }: {
   teams: MockTeam[]
   value: string
   onChange: (id: string) => void
   label: string
-  accent: string
+  accentColor: string
 }) {
   const sorted = [...teams].sort((a, b) => {
     const regionOrder: Record<string, number> = { South: 0, East: 1, West: 2, Midwest: 3 }
@@ -314,13 +483,35 @@ function TeamSelector({
   const selected = teams.find(t => t.id === value)
 
   return (
-    <div className="flex-1 min-w-0">
-      <label className={`text-xs uppercase tracking-wider font-semibold mb-2 block ${accent}`}>{label}</label>
-      <div className="relative">
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <label style={{
+        fontSize: 11,
+        textTransform: 'uppercase',
+        letterSpacing: '0.08em',
+        fontWeight: 600,
+        color: accentColor,
+        display: 'block',
+        marginBottom: 8,
+      }}>
+        {label}
+      </label>
+      <div style={{ position: 'relative' }}>
         <select
           value={value}
           onChange={e => onChange(e.target.value)}
-          className="w-full appearance-none rounded-xl border border-gray-700 bg-gray-900 px-4 py-3 pr-10 text-sm font-medium text-white focus:border-gray-500 focus:outline-none"
+          style={{
+            width: '100%',
+            appearance: 'none',
+            borderRadius: 10,
+            border: `1px solid ${T.border}`,
+            background: T.white,
+            padding: '10px 36px 10px 14px',
+            fontSize: 14,
+            fontWeight: 500,
+            color: T.navy,
+            outline: 'none',
+            cursor: 'pointer',
+          }}
         >
           {sorted.map(t => (
             <option key={t.id} value={t.id}>
@@ -328,16 +519,69 @@ function TeamSelector({
             </option>
           ))}
         </select>
-        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+        <ChevronDown
+          style={{
+            pointerEvents: 'none',
+            position: 'absolute',
+            right: 12,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: 16,
+            height: 16,
+            color: T.muted,
+          }}
+        />
       </div>
       {selected && (
-        <div className="mt-2 flex items-center gap-2 px-1">
+        <div style={{
+          marginTop: 8,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '0 4px',
+        }}>
           <TeamLogo team={selected} size={20} />
-          <span className="text-xs text-gray-500">{selected.conference} · {selected.winsTotal}-{selected.lossesTotal}</span>
-          <span className="ml-auto text-xs text-gray-600">adjEM {selected.stats.adjEM.toFixed(1)}</span>
+          <span style={{ fontSize: 12, color: T.muted }}>{selected.conference} · {selected.winsTotal}-{selected.lossesTotal}</span>
+          <span style={{ marginLeft: 'auto', fontSize: 12, color: T.gold, fontWeight: 600 }}>
+            adjEM {selected.stats.adjEM.toFixed(1)}
+          </span>
         </div>
       )}
     </div>
+  )
+}
+
+// ─── Section card wrapper ─────────────────────────────────────────────────────
+
+function Card({ children, style = {} }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  return (
+    <div style={{
+      borderRadius: 12,
+      border: `1px solid ${T.border}`,
+      background: T.white,
+      padding: 20,
+      ...style,
+    }}>
+      {children}
+    </div>
+  )
+}
+
+function SectionHeading({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <h3 style={{
+      fontSize: 14,
+      fontWeight: 700,
+      color: T.navy,
+      marginBottom: 16,
+      display: 'flex',
+      alignItems: 'center',
+      gap: 8,
+      fontFamily: '"Playfair Display", Georgia, serif',
+    }}>
+      {icon}
+      {children}
+    </h3>
   )
 }
 
@@ -365,44 +609,87 @@ export default function ComparePage({ teams }: { teams: MockTeam[] }) {
   if (!team1 || !team2) return null
 
   return (
-    <div className="space-y-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       {/* Header */}
       <div>
-        <Link href="/" className="text-xs text-gray-600 hover:text-gray-400 transition mb-4 inline-block">← Back</Link>
-        <h1 className="text-2xl font-black text-white">Head-to-Head Comparison</h1>
-        <p className="text-gray-500 text-sm mt-1">Pick any two 2026 tournament teams for a data-driven matchup breakdown.</p>
+        <Link
+          href="/"
+          style={{
+            fontSize: 12,
+            color: T.muted,
+            textDecoration: 'none',
+            display: 'inline-block',
+            marginBottom: 16,
+          }}
+        >
+          ← Back
+        </Link>
+        <h1 style={{
+          fontSize: 28,
+          fontWeight: 700,
+          color: T.navy,
+          fontFamily: '"Playfair Display", Georgia, serif',
+          marginBottom: 6,
+        }}>
+          Head-to-Head
+        </h1>
+        <p style={{ fontSize: 14, color: T.muted }}>
+          Pick any two 2026 tournament teams for a data-driven matchup breakdown.
+        </p>
       </div>
 
       {/* Selectors */}
-      <div className="rounded-2xl border border-gray-800 bg-gray-900/60 p-5">
-        <div className="flex items-end gap-3">
+      <Card>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
           <TeamSelector
             teams={nonFF}
             value={team1Id}
             onChange={setTeam1Id}
             label="Team 1"
-            accent="text-blue-400"
+            accentColor={T.blue}
           />
           <button
             onClick={swap}
-            className="shrink-0 mb-0.5 flex h-10 w-10 items-center justify-center rounded-xl border border-gray-700 bg-gray-800 text-gray-400 hover:text-white hover:border-gray-500 transition"
+            style={{
+              flexShrink: 0,
+              marginBottom: 2,
+              width: 40,
+              height: 40,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 10,
+              border: `1px solid ${T.border}`,
+              background: T.parchment,
+              color: T.navyMuted,
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
             title="Swap teams"
           >
-            <ArrowLeftRight className="h-4 w-4" />
+            <ArrowLeftRight style={{ width: 16, height: 16 }} />
           </button>
           <TeamSelector
             teams={nonFF}
             value={team2Id}
             onChange={setTeam2Id}
             label="Team 2"
-            accent="text-orange-400"
+            accentColor={T.amber}
           />
         </div>
-      </div>
+      </Card>
 
       {/* Same team warning */}
       {team1.id === team2.id && (
-        <div className="rounded-xl border border-yellow-800/40 bg-yellow-950/20 p-4 text-center text-sm text-yellow-500">
+        <div style={{
+          borderRadius: 10,
+          border: `1px solid #fde68a`,
+          background: '#fffbeb',
+          padding: 16,
+          textAlign: 'center',
+          fontSize: 14,
+          color: '#92400e',
+        }}>
           Select two different teams to compare.
         </div>
       )}
@@ -413,46 +700,54 @@ export default function ComparePage({ teams }: { teams: MockTeam[] }) {
           <WinProbBar team1={team1} team2={team2} prob1={prediction.team1WinProb} />
 
           {/* Column headers */}
-          <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center px-1">
-            <div className="flex items-center gap-2">
-              <TeamLogo team={team1} size={28} />
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr auto 1fr',
+            gap: 12,
+            alignItems: 'center',
+            padding: '0 4px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <TeamLogo team={team1} size={32} />
               <div>
-                <div className="text-sm font-bold text-gray-200">{team1.name}</div>
-                <div className="text-xs text-gray-600">#{team1.seed} · {team1.region}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: T.navy }}>{team1.name}</div>
+                <div style={{ fontSize: 12, color: T.muted }}>#{team1.seed} · {team1.region}</div>
               </div>
             </div>
-            <div className="text-xs text-gray-600 text-center w-24">Stat</div>
-            <div className="flex items-center justify-end gap-2">
-              <div className="text-right">
-                <div className="text-sm font-bold text-gray-200">{team2.name}</div>
-                <div className="text-xs text-gray-600">#{team2.seed} · {team2.region}</div>
+            <div style={{
+              fontSize: 11,
+              color: T.muted,
+              textAlign: 'center',
+              width: 96,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+            }}>
+              Stat
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: T.navy }}>{team2.name}</div>
+                <div style={{ fontSize: 12, color: T.muted }}>#{team2.seed} · {team2.region}</div>
               </div>
-              <TeamLogo team={team2} size={28} />
+              <TeamLogo team={team2} size={32} />
             </div>
           </div>
 
-          {/* Stats grid */}
-          <div className="rounded-xl border border-gray-800 bg-gray-900/60 p-5">
-            <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-orange-400" />
+          {/* Efficiency stats */}
+          <Card>
+            <SectionHeading icon={<TrendingUp style={{ width: 16, height: 16, color: T.gold }} />}>
               Efficiency Stats
-            </h3>
-
+            </SectionHeading>
+            <StatBar label="adjEM" v1={team1.stats.adjEM} v2={team2.stats.adjEM} higherIsBetter />
             <StatBar
-              label="adjEM"
-              v1={team1.stats.adjEM}
-              v2={team2.stats.adjEM}
-              higherIsBetter
-            />
-            <StatBar
-              label="Off Eff (adjOE)"
+              label="Off Eff"
               v1={team1.stats.adjOE}
               v2={team2.stats.adjOE}
               higherIsBetter
               format={(n) => n.toFixed(1)}
             />
             <StatBar
-              label="Def Eff (adjDE)"
+              label="Def Eff"
               v1={team1.stats.adjDE}
               v2={team2.stats.adjDE}
               higherIsBetter={false}
@@ -473,7 +768,7 @@ export default function ComparePage({ teams }: { teams: MockTeam[] }) {
               format={(n) => `${(n * 100).toFixed(1)}%`}
             />
             <StatBar
-              label="Turnover Rate"
+              label="TO Rate"
               v1={team1.stats.turnoverRate}
               v2={team2.stats.turnoverRate}
               higherIsBetter={false}
@@ -486,15 +781,13 @@ export default function ComparePage({ teams }: { teams: MockTeam[] }) {
               higherIsBetter
               format={(n) => `${(n * 100).toFixed(1)}%`}
             />
-          </div>
+          </Card>
 
-          {/* Profile scores */}
-          <div className="rounded-xl border border-gray-800 bg-gray-900/60 p-5">
-            <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-yellow-400" />
+          {/* Tournament profile */}
+          <Card>
+            <SectionHeading icon={<Trophy style={{ width: 16, height: 16, color: T.gold }} />}>
               Tournament Profile
-            </h3>
-
+            </SectionHeading>
             <StatBar
               label="Title Profile"
               v1={team1.titleProfileScore}
@@ -510,7 +803,7 @@ export default function ComparePage({ teams }: { teams: MockTeam[] }) {
               format={(n) => `${n}%`}
             />
             <StatBar
-              label="Season W-L %"
+              label="W-L %"
               v1={(team1.winsTotal ?? 0) / Math.max(1, (team1.winsTotal ?? 0) + (team1.lossesTotal ?? 0))}
               v2={(team2.winsTotal ?? 0) / Math.max(1, (team2.winsTotal ?? 0) + (team2.lossesTotal ?? 0))}
               higherIsBetter
@@ -523,33 +816,61 @@ export default function ComparePage({ teams }: { teams: MockTeam[] }) {
               higherIsBetter={false}
               format={(n) => `#${n}`}
             />
-          </div>
+          </Card>
 
           {/* Deciding factors + key players */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
             <FactorsPanel prediction={prediction} team1={team1} team2={team2} />
             <PlayersPanel team1={team1} team2={team2} />
           </div>
 
           {/* Quick links */}
-          <div className="flex flex-wrap gap-3">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
             <Link
               href={`/teams/${team1.slug}`}
-              className="rounded-lg border border-gray-800 bg-gray-900/40 px-4 py-2 text-xs font-medium text-gray-400 hover:text-white hover:border-gray-600 transition"
+              style={{
+                borderRadius: 8,
+                border: `1px solid ${T.border}`,
+                background: T.white,
+                padding: '8px 16px',
+                fontSize: 12,
+                fontWeight: 500,
+                color: T.navyMuted,
+                textDecoration: 'none',
+              }}
             >
               Full {team1.name} profile →
             </Link>
             <Link
               href={`/teams/${team2.slug}`}
-              className="rounded-lg border border-gray-800 bg-gray-900/40 px-4 py-2 text-xs font-medium text-gray-400 hover:text-white hover:border-gray-600 transition"
+              style={{
+                borderRadius: 8,
+                border: `1px solid ${T.border}`,
+                background: T.white,
+                padding: '8px 16px',
+                fontSize: 12,
+                fontWeight: 500,
+                color: T.navyMuted,
+                textDecoration: 'none',
+              }}
             >
               Full {team2.name} profile →
             </Link>
             <Link
               href="/bracket"
-              className="rounded-lg border border-orange-800/40 bg-orange-950/20 px-4 py-2 text-xs font-medium text-orange-400 hover:text-orange-300 hover:border-orange-600/60 transition ml-auto"
+              style={{
+                borderRadius: 8,
+                border: `1px solid ${T.blue}`,
+                background: T.blue,
+                padding: '8px 16px',
+                fontSize: 12,
+                fontWeight: 600,
+                color: T.white,
+                textDecoration: 'none',
+                marginLeft: 'auto',
+              }}
             >
-              Simulate the full tournament →
+              Simulate the bracket →
             </Link>
           </div>
         </>

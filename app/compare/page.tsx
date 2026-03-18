@@ -10,7 +10,7 @@ export const metadata = {
 
 export default function Compare() {
   return (
-    <main className="min-h-screen bg-gray-950 px-4 py-8">
+    <main className="min-h-screen px-4 py-8" style={{ backgroundColor: '#f5f0e6' }}>
       <div className="mx-auto max-w-5xl">
         <ComparePage teams={ALL_TEAMS} />
       </div>

@@ -4899,7 +4899,7 @@ const MIDWEST_TEAMS: (MockTeam & { _dataSource?: string })[] = [
           ppg: 17.3,
           rpg: 3.7,
           apg: 2,
-          threePtPct: 0.375,
+          threePtPct: 0.4,
           trueShootingPct: 0.649,
           usagePct: 27,
         },
